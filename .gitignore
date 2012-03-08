@@ -1,2 +1,8 @@
-
-.DS_Store
+*.DS_Store
+*.project
+*.settings
+*/bin
+*.classpath
+*.gitignore~
+*/build
+*.gradle
