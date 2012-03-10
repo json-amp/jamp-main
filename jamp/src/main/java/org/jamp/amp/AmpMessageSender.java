@@ -2,5 +2,5 @@ package org.jamp.amp;
 
 /** Sends an Amp message via REST, STOMP, or WebSockets. */
 public interface AmpMessageSender {
-	void sendMessage(String name, Object payload, String toInvoker, String fromInvoker) throws Exception;
+    AmpMessage sendMessage(AmpMessage message) throws Exception;
 }

@@ -1,13 +1,13 @@
 package org.jamp.amp.encoder;
 
-import org.jamp.amp.Message;
+import org.jamp.amp.AmpMessage;
 
 /** Encodes an JAMP input object (now just string) into a Message. */
-public class JampMessageDecoder implements Decoder<Message, String>{
+public class JampMessageDecoder implements Decoder<AmpMessage, String>{
 	enum ParseMode{messageType, to, from, methodName, done};
 	
 
-    public Message decodeObject(String payload) throws Exception {
+    public AmpMessage decodeObject(String payload) throws Exception {
         ParseMode mode = ParseMode.messageType;
         char[] cs = payload.toCharArray();
         if(cs[0]!='[' || cs[1]!='"' || cs[cs.length-1]!=']') {
@@ -32,7 +32,7 @@ public class JampMessageDecoder implements Decoder<Message, String>{
                     mode=ParseMode.methodName;
                     break;
                 case methodName:
-                    return new Message(messageType.toString(), to.toString(), from.toString(), methodName.toString(), payload.substring(index+1, payload.length()-1));
+                    return new AmpMessage(messageType.toString(), to.toString(), from.toString(), methodName.toString(), payload.substring(index+1, payload.length()-1), payload);
                 }
                 continue;
             }

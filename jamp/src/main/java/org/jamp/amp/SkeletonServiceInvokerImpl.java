@@ -17,7 +17,7 @@ import java.util.Set;
 
 import org.jamp.amp.encoder.Decoder;
 import org.jamp.amp.encoder.JSONDecoder;
-import org.jamp.amp.encoder.JampMessageDecoder;
+import org.jamp.amp.encoder.JSONEncoder;
 
 
 /** Used to invoke services on the side that acts as the server side. */
@@ -25,8 +25,6 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
     Class<?> clazz;
     Object instance;
 
-    @SuppressWarnings("rawtypes") //on purpose.
-    Decoder messageDecoder = new JampMessageDecoder();
     Decoder<Object, Object> argumentDecoder = new JSONDecoder();
     
 
@@ -34,10 +32,9 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
         init();
     }
 	SkeletonServiceInvokerImpl(Class<?> clazz, Object instance,
-            Decoder<Message, String> messageDecoder, Decoder<Object, Object> argumentDecoder) {
+            Decoder<AmpMessage, String> messageDecoder, Decoder<Object, Object> argumentDecoder) {
         this.clazz = clazz;
         this.instance = instance;
-        this.messageDecoder = messageDecoder;
         this.argumentDecoder = argumentDecoder;
         init();
     }
@@ -46,9 +43,6 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
 	    /** The plan is to use look these up with a ServiceLocator so that can be pluggable 
 	     * So you could swap in Jackson or something else for JSON serialization.
 	     */
-	    if (messageDecoder==null) {
-	        messageDecoder = new JampMessageDecoder();
-	    }
         if (argumentDecoder==null) {
             argumentDecoder = new JSONDecoder();
         }
@@ -65,9 +59,8 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
 	
 
     @SuppressWarnings("unchecked")	
-    public Message invokeMessage(Object payload) throws Exception {
-        Message message = (Message) messageDecoder.decodeObject(payload);
-	    
+    public AmpMessage invokeMessage(AmpMessage message) throws Exception {
+ 	    
 	    argumentDecoder = new JSONDecoder();
 	    List<Object> args = (List<Object>) argumentDecoder.decodeObject(message.getArgs());
 	    
@@ -75,10 +68,38 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
 	    Object thisObject = thisObject();
 	    Method method = findMethod(message, args, thisObject);
 	    Object [] parameters = coerceArgumentList(args, method.getParameterTypes());
+	    Exception exception = null;
+	    Object returnObject = null;
 	    
-	    method.invoke(instance, parameters);
+	    try {
+	        returnObject = method.invoke(instance, parameters);
+	    } catch (Exception ex) {
+	        exception = ex;
+	    }
+	    
+	    AmpMessage returnMessage = null;
+	    
+	    if (message.getMessageType()==AmpMessage.Type.SEND && exception == null) {
+	        return null;
+	    } else if (message.getMessageType()==AmpMessage.Type.SEND && exception != null) {
+	        returnMessage = new AmpMessage();
+	        returnMessage.setMessageType(AmpMessage.Type.ERROR);
+        } else if (message.getMessageType()==AmpMessage.Type.QUERY && exception != null) {
+            returnMessage = new AmpMessage();
+            returnMessage.setMessageType(AmpMessage.Type.ERROR_QUERY);
+        } else if (message.getMessageType()==AmpMessage.Type.QUERY && exception == null) {
+            returnMessage = new AmpMessage();
+            returnMessage.setMessageType(AmpMessage.Type.REPLY);
+            JSONEncoder encoder = new JSONEncoder();
+            String encodedReturn = encoder.encodeObject(returnObject);
+            returnMessage.setReturnObject(encodedReturn);
+            
+        } 
+	        
+	    
+	        
 	    	    
-	    return message;
+	    return returnMessage;
 	    
 	}
     private Object[] coerceArgumentList(List<Object> args,
@@ -269,7 +290,7 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
         }
         return setters.toArray(new Method[setters.size()]);
     }
-    private Method findMethod(Message message, List<Object> args,
+    private Method findMethod(AmpMessage message, List<Object> args,
             Object thisObject) {
         Method method = null;
 	    

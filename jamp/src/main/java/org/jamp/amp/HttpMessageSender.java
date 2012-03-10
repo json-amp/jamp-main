@@ -10,23 +10,21 @@ import java.net.URL;
 
 public class HttpMessageSender implements AmpMessageSender {
     
-    String url;
 
-    public HttpMessageSender (String url) {
-        this.url = url;
+    public HttpMessageSender () {
     }
 
-    public void sendMessage(String name, Object oPayload, String toInvoker,
-            String fromInvoker) throws Exception {
+    public AmpMessage sendMessage(AmpMessage message) throws Exception {
         
         
-        URL url = new URL(this.url);
+        URL url = new URL(message.getTo());
         HttpURLConnection connection = (HttpURLConnection)url.openConnection();
         connection.setRequestMethod("POST");
         
         DataOutputStream outStream = null;
         
         try {
+            Object oPayload = message.getPayload();
         
             if (oPayload instanceof String) {
                 String payload = (String) oPayload;
@@ -81,6 +79,7 @@ public class HttpMessageSender implements AmpMessageSender {
         }
         rd.close();
         System.out.println(response);
+        return null;
         
     }
 

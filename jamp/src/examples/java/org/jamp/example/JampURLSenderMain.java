@@ -16,9 +16,9 @@ public class JampURLSenderMain {
 
 	public static void main (String [] args) throws Exception {
 		
-		AmpProxyCreator ampProxy = new AmpProxyCreator(new JampMethodEncoder(), new HttpMessageSender("http://localhost:8080/jamp_servlet/JampServlet") );
+		AmpProxyCreator ampProxy = new AmpProxyCreator(new JampMethodEncoder(), new HttpMessageSender() );
 		
-		EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class, "to", "from");
+		EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class, "http://localhost:8080/jamp_servlet/JampServlet", "from");
 
         List<AddressBook> books = new ArrayList<AddressBook>();
         books.add(new AddressBook("a"));

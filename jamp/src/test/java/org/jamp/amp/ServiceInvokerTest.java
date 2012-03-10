@@ -10,6 +10,8 @@ import java.util.Set;
 
 import org.jamp.amp.AmpFactory;
 import org.jamp.amp.SkeletonServiceInvoker;
+import org.jamp.amp.encoder.Decoder;
+import org.jamp.amp.encoder.JampMessageDecoder;
 import org.jamp.amp.encoder.JampMethodEncoder;
 import org.jamp.example.model.AddressBook;
 import org.jamp.example.model.Employee;
@@ -20,13 +22,16 @@ import org.junit.Test;
 
 
 public class ServiceInvokerTest {
+    
+    Decoder <AmpMessage, String> messageDecoder = new JampMessageDecoder();
+
 
     @Test
     public void invokerTest() throws Exception {
         Object methodEncodedAsMessage = getMethodEncodedAsMessage();
         System.out.println(methodEncodedAsMessage);
         SkeletonServiceInvoker serviceInvoker = AmpFactory.factory().createJampServerSkeleton(EmployeeServiceImpl.class);
-        serviceInvoker.invokeMessage(methodEncodedAsMessage);
+        serviceInvoker.invokeMessage(messageDecoder.decodeObject((String)methodEncodedAsMessage));
         
     }
 
@@ -52,7 +57,7 @@ public class ServiceInvokerTest {
         Employee emp = new Employee("rick", "510-555-1212", books, books2, books3.toArray(new AddressBook[books3.size()]));
         emp.setOld(true);
         
-        Object encodedObject = encoder.encodeMethodForSend(method, new Object[]{emp, 1, 1.0f, 2, "hello dolly"}, "to@me", "from@someoneelse");
+        Object encodedObject = encoder.encodeMethodForSend(method, new Object[]{emp, 1, 1.0f, 2, "hello dolly"}, "ws://foobar/employeeService", "browser://foobar/employeeService");
         return encodedObject;
     }
 }

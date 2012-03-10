@@ -2,13 +2,13 @@ package org.jamp.amp.encoder;
 
 import java.io.BufferedReader;
 
-import org.jamp.amp.Message;
+import org.jamp.amp.AmpMessage;
 
 
 
 
 /** Encodes an JAMP input object (bufferedreader) into a Message. */
-public class JampMessageReaderDecoder implements Decoder <Message, BufferedReader> {
+public class JampMessageReaderDecoder implements Decoder <AmpMessage, BufferedReader> {
 	
     static String readPayload(BufferedReader reader) throws Exception {
         StringBuilder builder = new StringBuilder();
@@ -28,7 +28,7 @@ public class JampMessageReaderDecoder implements Decoder <Message, BufferedReade
     }
 
 
-    public Message decodeObject(BufferedReader reader) throws Exception {
+    public AmpMessage decodeObject(BufferedReader reader) throws Exception {
         JampMessageDecoder decoder = new JampMessageDecoder();
 
         String str = readPayload(reader);

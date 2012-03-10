@@ -6,12 +6,17 @@ import java.io.FileReader;
 
 import org.jamp.amp.AmpFactory;
 import org.jamp.amp.SkeletonServiceInvoker;
+import org.jamp.amp.encoder.Decoder;
+import org.jamp.amp.encoder.JampMessageDecoder;
 import org.jamp.example.model.EmployeeService;
+import org.jamp.amp.AmpMessage;
 
 
 public class JampFileProcessorMain {
 	
     static SkeletonServiceInvoker serviceInvoker = AmpFactory.factory().createJampServerSkeleton(EmployeeService.class);
+    static Decoder <AmpMessage, String> messageDecoder = new JampMessageDecoder();
+
 
 
 	private static String readPayload(File file) throws Exception {
@@ -42,7 +47,8 @@ public class JampFileProcessorMain {
 				continue;
 			}
 			String payload = readPayload(file);
-		    serviceInvoker.invokeMessage(payload);
+			AmpMessage message = messageDecoder.decodeObject(payload);
+		    serviceInvoker.invokeMessage(message);
 
 		}
 	}

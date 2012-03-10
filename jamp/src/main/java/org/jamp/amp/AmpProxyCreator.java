@@ -39,8 +39,11 @@ public class AmpProxyCreator {
 			public Object invoke(Object arg0, Method method, Object[] method_params)
 					throws Throwable {
 				Object payload = methodEncoder.encodeMethodForSend(method, method_params, toURL, fromURL);
-				System.out.println(payload);
-				invoker.sendMessage(method.getName(), payload, toURL, fromURL);
+				
+				AmpMessage.Type messageType = method.getReturnType().equals(Void.TYPE) ? AmpMessage.Type.SEND : AmpMessage.Type.QUERY;
+				AmpMessage message = new AmpMessage(messageType, toURL, fromURL, method.getName(), null, payload);
+				
+				invoker.sendMessage(message);
 				return null;
 			}
 		};

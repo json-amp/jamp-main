@@ -15,10 +15,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jamp.amp.MessageQueueConnection;
+import org.jamp.amp.MessageURL;
 
 /**
  * This only works with Strings for now, because that is all we need for this
@@ -35,7 +34,7 @@ public class StompConnection implements Closeable, MessageQueueConnection {
     Map<Integer, MessageListener> subscriptions = Collections.synchronizedMap(new HashMap<Integer, MessageListener>());
     Map<MessageListener, Integer> subscriptionsIds = Collections.synchronizedMap(new HashMap<MessageListener,Integer>());
     String host;
-    int port;
+    String port;
     Socket socket;
     PrintWriter out;
     BufferedReader reader;// This is somewhat limiting since Stomp can do both
@@ -44,8 +43,6 @@ public class StompConnection implements Closeable, MessageQueueConnection {
     
     BlockingQueue<String> closeQueue = new ArrayBlockingQueue<String>(1);
     boolean debug = true;
-    Pattern stompURLMatcher = Pattern
-            .compile("^stomp://([a-zA-Z0-9_]*):([0-9]*)//?.*");
     boolean connected;
     static ThreadPoolExecutor threadPool = null;
     int receiptNumber;
@@ -65,20 +62,19 @@ public class StompConnection implements Closeable, MessageQueueConnection {
             throw new IOException("Already connected.");
         }
 
-        /* Parse connectString URL for host, and port. */
-        Matcher matcher = stompURLMatcher.matcher(connectionString);
-        if (!matcher.matches()) {
-            throw new IOException("Not a valid stomp connection string");
+        MessageURL messageURL = new MessageURL(connectionString);        
+        
+        if (!messageURL.getScheme().equals("stomp")) {
+            throw new  IllegalStateException("Scheme must be stomp");
         }
-        host = matcher.group(1);
-        port = Integer.parseInt(matcher.group(2));
-
-        if (debug)
-            System.out.printf("host %s, port %s \n", host, port);
-
+        
+        this.host = messageURL.getHost();
+        this.port = messageURL.getPort();
+        
+        
 
         /* Create a new socket. */
-        socket = new Socket(host, port);
+        socket = new Socket(host, Integer.parseInt(port));
         out = new PrintWriter(socket.getOutputStream(), true);
         reader = new BufferedReader(new InputStreamReader(
                 socket.getInputStream()));
@@ -336,15 +332,21 @@ public class StompConnection implements Closeable, MessageQueueConnection {
 
     }
 
-    public void send(String destination, String message) throws IOException {
+    public void send(String destination, Object oMessage) throws IOException {
         if (!connected)
             throw new IOException("Not connected");
         
-        this.sendCommandWithBody("SEND", message, 
-                String.format("destination:%s", destination), 
-                "content-type:text/plain", 
-                String.format("content-length:%d", 
-                        message.length()));
+        if (oMessage instanceof String) {
+            String message = (String) oMessage; 
+            this.sendCommandWithBody("SEND", message, 
+                    String.format("destination:%s", destination), 
+                    "content-type:text/plain", 
+                    String.format("content-length:%d", 
+                            message.length()));        
+        } else {
+            //we don't handle byte arrays yet.
+        }
+
 
 
     }

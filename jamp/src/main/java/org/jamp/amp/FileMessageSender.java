@@ -22,23 +22,23 @@ public class FileMessageSender implements AmpMessageSender {
 		}
 	}
 	
-	public void sendMessage(String name, Object payload, String toInvoker, String fromInvoker) throws Exception  {
+	public AmpMessage sendMessage(AmpMessage message) throws Exception  {
 		counter++;
-		File outputFile = new File(dir, name + "_" + System.currentTimeMillis() + "_" + counter + ".jamp");
+		File outputFile = new File(dir, message.getToURL().getServiceName() + "." + message.getMethodName()  + "_" + System.currentTimeMillis() + "_" + counter + ".jamp");
 		
-		if (payload instanceof String) {
+		if (message.getPayload() instanceof String) {
 			FileWriter writer = null;
 			try {
 				writer = new FileWriter(outputFile);
-				writer.write((String)payload);
+				writer.write((String)message.getPayload());
 			} finally {
 				if (writer!=null) writer.close();
 			}
-		} else if (payload instanceof byte[]) {
+		} else if (message.getPayload() instanceof byte[]) {
 			FileOutputStream writer = null;
 			try {
 				writer = new FileOutputStream(outputFile);
-				writer.write((byte[])payload);
+				writer.write((byte[])message.getPayload());
 			} finally {
 				if (writer!=null) writer.close();
 			}			
@@ -47,11 +47,12 @@ public class FileMessageSender implements AmpMessageSender {
 			try {
 				writer = new FileOutputStream(outputFile);
 				ObjectOutputStream out = new ObjectOutputStream(writer);
-				out.writeObject(payload);
+				out.writeObject(message.getPayload());
 			} finally {
 				if (writer!=null) writer.close();
 			}			
 		}
+		return null;
 	}
 
 }

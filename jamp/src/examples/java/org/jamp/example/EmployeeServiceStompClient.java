@@ -3,8 +3,9 @@ package org.jamp.example;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jamp.amp.AmpFactory;
+import org.jamp.amp.AmpMessageSender;
 import org.jamp.amp.AmpProxyCreator;
-import org.jamp.amp.StompMessageSender;
 import org.jamp.example.model.AddressBook;
 import org.jamp.example.model.Employee;
 import org.jamp.example.model.EmployeeService;
@@ -14,10 +15,12 @@ public class EmployeeServiceStompClient {
     
     public static void main (String [] args) throws Exception {
         
-        AmpProxyCreator ampProxy = new AmpProxyCreator(new StompMessageSender("stomp://localhost:6666/foo", 
-                "rick", "rick", "queue/empService") );
+        AmpMessageSender sender = AmpFactory.factory().createMQMessageSender("stomp://localhost:6666/foo", 
+                "rick", "rick", "queue/empService");
         
-        EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class, "to", "from");
+        AmpProxyCreator ampProxy = new AmpProxyCreator( sender );
+        
+        EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class, "stomp://localhost:6666/foo", "stomp://localhost:6666/foo");
         
         List<AddressBook> books = new ArrayList<AddressBook>();
         books.add(new AddressBook("a"));
