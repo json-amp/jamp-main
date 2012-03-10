@@ -19,7 +19,19 @@ Project Goal:
 
 Status: 
 
-  Current Status: 
+  
+  Current Status:
+     In the process of implementing full RPC and routing. In progress....
+     Complete when all of the old examples run and the new examples.
+     Known issues so far Method Encoder does not make sense anymore... really needs to be a Message Encoder can't limit to "send".
+     Need to make router configurable as to what is executing locally versus remotely (new factory methods for WebTier, versus message tier routers)
+     MQMessageSender needs to correlate message id before returning from return queue.. put it back into return queue if wrong Message.
+     JampMessageDecoder only works with SEND, it needs to work with all message types.
+     SkeletonServiceInvokerImpl needs to switch to/from on way out.
+     Need a good way to generate message ids for correlation.
+     
+  
+  Status: 
      For the JampBinding I created a StompMessageSender. This allows one to proxy interfaces and send the method calls over jamp+stomp://somehost:6666.
      I also created a StompMessageReceiver for the SOA server side. It allows you to bind any service interface to jamp+stomp://somehost:6666.
      

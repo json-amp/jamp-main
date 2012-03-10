@@ -80,7 +80,7 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
 	    AmpMessage returnMessage = null;
 	    
 	    if (message.getMessageType()==AmpMessage.Type.SEND && exception == null) {
-	        return null;
+	        returnMessage = null;
 	    } else if (message.getMessageType()==AmpMessage.Type.SEND && exception != null) {
 	        returnMessage = new AmpMessage();
 	        returnMessage.setMessageType(AmpMessage.Type.ERROR);
