@@ -1,5 +1,3 @@
-Updated 4/3/2012 at 9:09 PM
-
 
 Project for jamp (json actor message protocol)
 See: http://hessian.caucho.com/jamp/index.xtp
@@ -11,11 +9,7 @@ http://net.tutsplus.com/tutorials/javascript-ajax/start-using-html5-websockets-t
 
 Project Goal: 
 
-   Make calls from HTML 5.0 web application to JAMP websocket tier. DONE!
-   It works. 
-   
-   Next step... HTML 5.0 JavaScript to JAMP consumers and producers (Python, Java, JavaScript) over STOMP, AMQP, etc.
-
+   Implement JAMP.
 
 Status: 
 
@@ -138,7 +132,7 @@ Status:
         Encoder encoder = new JSONEncoder();
         Decoder decoder = new JSONDecoder();
       
-        String str = "ßæçîñking bad~\u007f\u0080~"; //Range checking 007f end of ascii and 0080 start of unicode
+        String str = "ÔøΩÔøΩÔøΩÔøΩÔøΩking bad~\u007f\u0080~"; //Range checking 007f end of ascii and 0080 start of unicode
         assertEquals("\"\\u00DF\\u00E6\\u00E7\\u00EE\\u00F1king bad~\u007f\\u0080~\"", encoder.encodeObject(str));        
         assertEquals(str, decoder.decodeObject(encoder.encodeObject(str)));
         
