@@ -1,0 +1,20 @@
+This project is not ready to be really looked at yet.
+At one point, SEND was working over WebSocket, STOMP and REST/HTTP.
+
+We are in the process of adding QUERY, REPLY, ERROR, and ERROR-QUERY.
+It is broken at this point (unit tests work and some of the examples work).
+
+Probably by the end of this week, all of the examples should be workign again.
+
+I am going to write up a road map. 
+
+To read more about JAMP go here:
+http://json-amp.github.com/
+
+Once I get all of the RPC style communication working again, I am giong to create a release branch,
+and call this version 0.01.
+
+Then I am going to start working on the JavaScript client pieces for a while.
+
+
+
