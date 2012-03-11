@@ -3,7 +3,7 @@
 This project is not ready to be really looked at yet.
 At one point, SEND was working over WebSocket, STOMP and REST/HTTP.
 
-We are in the process of adding QUERY, REPLY, ERROR, and ERROR-QUERY.
+We (mostly me at this point) are in the process of adding QUERY, REPLY, ERROR, and ERROR-QUERY.
 It is broken at this point (unit tests work and some of the examples work).
 
 Probably by the end of this week, all of the examples should be working again.
