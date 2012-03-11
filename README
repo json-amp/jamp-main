@@ -1,20 +1,37 @@
+4/10/2012
+
 This project is not ready to be really looked at yet.
 At one point, SEND was working over WebSocket, STOMP and REST/HTTP.
 
 We are in the process of adding QUERY, REPLY, ERROR, and ERROR-QUERY.
 It is broken at this point (unit tests work and some of the examples work).
 
-Probably by the end of this week, all of the examples should be workign again.
+Probably by the end of this week, all of the examples should be working again.
+I am working on this project about 20% of my time.
 
-I am going to write up a road map. 
+I am going to write up a roadmap. 
 
 To read more about JAMP go here:
 http://json-amp.github.com/
 
-Once I get all of the RPC style communication working again, I am giong to create a release branch,
-and call this version 0.01.
+Once I get all of the RPC style communication working again, I am going to create a release branch,
+and call this version 0.01. Then I am going to write up some articles to try to get other people to 
+work on it with me.
 
 Then I am going to start working on the JavaScript client pieces for a while.
 
+If you really want to know what JAMP is go here:
+https://github.com/json-amp/json-amp.github.com/wiki/Intro-to-JAMP
 
 
+If you are wondering why the code looks a bit odd:
+https://github.com/json-amp/json-amp.github.com/wiki/Coding-Style
+
+If you would like to read the IETF draft (specification):
+http://hessian.caucho.com/jamp/draft-ferg-jamp-v0.html
+
+Most of the ideas for JAMP came from ideas in Hessian 2.0 and works Scott Ferguson has done on BAM and WebSockets.
+
+The ideas for JAMP are from Scott Ferguson.
+
+--Rick Hightower
