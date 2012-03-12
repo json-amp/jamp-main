@@ -24,7 +24,7 @@ public class FileMessageSender implements AmpMessageSender {
 	
 	public AmpMessage sendMessage(AmpMessage message) throws Exception  {
 		counter++;
-		File outputFile = new File(dir, message.getToURL().getServiceName() + "." + message.getMethodName()  + "_" + System.currentTimeMillis() + "_" + counter + ".jamp");
+		File outputFile = new File(dir, message.getToURL().getServiceName() + "." + message.getAction()  + "_" + System.currentTimeMillis() + "_" + counter + ".jamp");
 		
 		if (message.getPayload() instanceof String) {
 			FileWriter writer = null;

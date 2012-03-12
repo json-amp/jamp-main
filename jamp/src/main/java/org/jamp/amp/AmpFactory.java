@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jamp.amp.encoder.Decoder;
 import org.jamp.amp.stomp.StompConnection;
 
 public class AmpFactory {
@@ -32,20 +31,6 @@ public class AmpFactory {
         return invoker;
     }
 
-
-    public SkeletonServiceInvoker createCustomServerSkeleton(Object instance, Decoder<Object,Object> arguments) {
-        SkeletonServiceInvokerImpl invoker = new SkeletonServiceInvokerImpl();
-        invoker.instance = instance;
-        invoker.argumentDecoder = arguments;
-        return invoker;
-    }
-
-    public SkeletonServiceInvoker createCustomServerSkeleton(Class<?> clazz, Decoder<Object,Object> arguments) {
-        SkeletonServiceInvokerImpl invoker = new SkeletonServiceInvokerImpl();
-        invoker.clazz = clazz;
-        invoker.argumentDecoder = arguments;
-        return invoker;
-    }
     
     public MessageQueueConnection createMQConnection (MessageURL url) {
         

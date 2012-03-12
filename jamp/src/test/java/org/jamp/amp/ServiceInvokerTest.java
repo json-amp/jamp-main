@@ -1,8 +1,6 @@
 package org.jamp.amp;
 
-import static org.junit.Assert.assertNotNull;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -12,10 +10,9 @@ import org.jamp.amp.AmpFactory;
 import org.jamp.amp.SkeletonServiceInvoker;
 import org.jamp.amp.encoder.Decoder;
 import org.jamp.amp.encoder.JampMessageDecoder;
-import org.jamp.amp.encoder.JampMethodEncoder;
+import org.jamp.amp.encoder.JampMessageEncoder;
 import org.jamp.example.model.AddressBook;
 import org.jamp.example.model.Employee;
-import org.jamp.example.model.EmployeeService;
 import org.jamp.example.model.EmployeeServiceImpl;
 import org.junit.Test;
 
@@ -37,9 +34,8 @@ public class ServiceInvokerTest {
 
     private Object getMethodEncodedAsMessage() throws NoSuchMethodException,
             Exception {
-        JampMethodEncoder encoder = new JampMethodEncoder();
-        Method method = EmployeeService.class.getDeclaredMethod("addEmployee", Employee.class, int.class, float.class, Integer.class, String.class);
-        assertNotNull(method);
+        
+        List <Object> args = new ArrayList<Object>();
         
         List<AddressBook> books = new ArrayList<AddressBook>();
         books.add(new AddressBook("a"));
@@ -57,7 +53,23 @@ public class ServiceInvokerTest {
         Employee emp = new Employee("rick", "510-555-1212", books, books2, books3.toArray(new AddressBook[books3.size()]));
         emp.setOld(true);
         
-        Object encodedObject = encoder.encodeMethodForSend(method, new Object[]{emp, 1, 1.0f, 2, "hello dolly"}, "ws://foobar/employeeService", "browser://foobar/employeeService");
+        
+        args.add(emp);
+        args.add(1);
+        args.add(1.0f);
+        args.add(2);
+        args.add("hello dolly");
+        
+        AmpMessage message = new AmpMessage("send");
+        
+        message.setAction("addEmployee");
+        message.setArgs(args);
+        message.setTo("stomp://foo/foo/foo");
+        message.setFrom("stomp://foo/foo/foo");
+        
+        JampMessageEncoder encoder = new JampMessageEncoder();
+        
+        Object encodedObject = encoder.encodeObject(message);
         return encodedObject;
     }
 }

@@ -1,75 +1,83 @@
 package org.jamp.amp;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 
 /** Represents an AMP message. */
 public class AmpMessage {
     
-    
+
     public enum Type {SEND, QUERY, REPLY, ERROR_QUERY, ERROR};
 
     Type messageType;
 	String to;
 	String from;
-	String methodName;
-	Object args;
-	Object returnObject;
+	String action;
+	List<Object> args;
+	Object replyObject;
 	MessageURL toURL;
 	MessageURL fromURL;
     Object payload;
+    String queryId;
+    Map <String, Object> errorObject;
+    
 
 
     public AmpMessage() {
         
     }
     
-    public AmpMessage(String sMessageType, String to, String from,
-			String methodName, Object args, Object payload) {	    
-        this(Enum.valueOf(Type.class, sMessageType.toUpperCase().replace('-', '_')),to,from,methodName, args, payload);
-	}
+    public AmpMessage(String sMessageType) {
+        this.messageType = Enum.valueOf(Type.class, sMessageType.toUpperCase().replace('-', '_'));
+ 	}
 
-    public AmpMessage(Type messageType, String to, String from,
-            String methodName, Object args, Object payload) {       
+	public AmpMessage(Type messageType, String to, String from,
+            String name, Object[] params) {
         this.messageType = messageType;
-        this.to = to;
-        this.from = from;
-        this.methodName = methodName;
-        this.args = args;
-        this.toURL = new MessageURL(to);
-        this.fromURL = new MessageURL(from);
-        this.payload = payload;
+        this.setTo(to);
+        this.setFrom(from);
+        this.action = name;
+        this.args = Arrays.asList(params);
+   
     }
 
-	@Override
+    @Override
 	public String toString() {
 		return "Message |||messageType=" + messageType + ", to=" + to + ", from="
-				+ from + ", methodName=" + methodName + ", args=" + args + "|||";
+				+ from + ", methodName=" + action + ", args=" + args + "|||";
 	}
 
 	public String getTo() {
 		return to;
 	}
 	public void setTo(String to) {
-		this.to = to;
+        this.toURL = new MessageURL(to);
+	    this.to = to;
 	}
 	public String getFrom() {
 		return from;
 	}
 	public void setFrom(String from) {
+	    this.fromURL = new MessageURL(from);
 		this.from = from;
 	}
-	public String getMethodName() {
-		return methodName;
+	public String getAction() {
+		return action;
 	}
-	public void setMethodName(String methodName) {
-		this.methodName = methodName;
+	public void setAction(String methodName) {
+		this.action = methodName;
 	}
-	public Object getArgs() {
+	public List<Object> getArgs() {
 		return args;
 	}
-	public void setArgs(Object args) {
+	public void setArgs(List<Object> args) {
 		this.args = args;
 	}
+	public void setArgs(Object[] args) {
+	    this.args = Arrays.asList(args);
+    }
 	public Type getMessageType() {
 		return messageType;
 	}
@@ -77,12 +85,12 @@ public class AmpMessage {
 		this.messageType = messageType;
 	}
 	
-	public Object getReturnObject() {
-	        return returnObject;
+	public Object getReplyObject() {
+	        return replyObject;
 	}
 
-	public void setReturnObject(Object returnObject) {
-	        this.returnObject = returnObject;
+	public void setReplyObject(Object returnObject) {
+	        this.replyObject = returnObject;
 	}
 
 
@@ -108,6 +116,23 @@ public class AmpMessage {
 
     public void setPayload(Object payload) {
         this.payload = payload;
+    }
+
+    
+    public String getQueryId() {
+        return queryId;
+    }
+
+    public void setQueryId(String queryId) {
+        this.queryId = queryId;
+    }
+
+    public Map<String, Object> getErrorObject() {
+        return errorObject;
+    }
+
+    public void setErrorObject(Map<String, Object> errorObject) {
+        this.errorObject = errorObject;
     }
 
 

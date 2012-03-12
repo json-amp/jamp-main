@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.jamp.amp.encoder.Decoder;
 import org.jamp.amp.encoder.JampMessageDecoder;
+import org.jamp.amp.encoder.JampMessageEncoder;
 import org.jamp.amp.stomp.MessageListener;
 
 
@@ -37,7 +38,12 @@ public class MQMessageReceiver {
     
     void handleTextMessage (String text) throws Exception{
         AmpMessage message = messageDecoder.decodeObject(text);
-        invoker.invokeMessage(message);
+        AmpMessage replyMessage = invoker.invokeMessage(message);
+        
+        JampMessageEncoder encoder = new JampMessageEncoder();
+        if (message.getMessageType()==AmpMessage.Type.QUERY) {
+            connection.send(message.getToURL().getServiceURI() + "_return", encoder.encodeObject(replyMessage));
+        }
     }
     
     /** This class is a callback like function class. I opted to not use an anonymous inner class to make this

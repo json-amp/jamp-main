@@ -13,13 +13,32 @@ Project Goal:
 
 Status: 
 
+  Current Status: 
+     In the process of implementing full RPC and routing. In progress....
+
+     NOT DONE: Need to make router configurable as to what is executing locally versus remotely (new factory methods for WebTier, versus message tier routers)
+
+     Got rid of Method Encoder, now just MessageEncoder.
+     Refactored JampMessageDecoder to use use JSON parser to parse to list and then decode. Now decode all JAMP message types.
+     
+    
+
+     DONE: MQMessageSender needs to correlate message id before returning from return queue.. put it back into return queue if wrong Message. 
+     (in real world just don't ack, but ack not implemented in test STOMP client/server)
+
+     DONE: SkeletonServiceInvokerImpl needs to switch to/from on way out.
+     Need a good way to generate message ids for correlation.
+
   
-  Current Status:
+  Status:
      In the process of implementing full RPC and routing. In progress....
      Complete when all of the old examples run and the new examples.
      Known issues so far Method Encoder does not make sense anymore... really needs to be a Message Encoder can't limit to "send".
      Need to make router configurable as to what is executing locally versus remotely (new factory methods for WebTier, versus message tier routers)
-     MQMessageSender needs to correlate message id before returning from return queue.. put it back into return queue if wrong Message.
+
+     MQMessageSender needs to correlate message id before returning from return queue.. put it back into return queue if wrong Message. 
+     (in real world just don't ack, but ack not implemented in test STOMP client/server)
+
      JampMessageDecoder only works with SEND, it needs to work with all message types.
      SkeletonServiceInvokerImpl needs to switch to/from on way out.
      Need a good way to generate message ids for correlation.

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.jamp.amp.AmpProxyCreator;
 import org.jamp.amp.HttpMessageSender;
-import org.jamp.amp.encoder.JampMethodEncoder;
 import org.jamp.example.model.AddressBook;
 import org.jamp.example.model.Employee;
 import org.jamp.example.model.EmployeeService;
@@ -16,7 +15,7 @@ public class JampURLSenderMain {
 
 	public static void main (String [] args) throws Exception {
 		
-		AmpProxyCreator ampProxy = new AmpProxyCreator(new JampMethodEncoder(), new HttpMessageSender() );
+		AmpProxyCreator ampProxy = new AmpProxyCreator(new HttpMessageSender() );
 		
 		EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class, "http://localhost:8080/jamp_servlet/JampServlet", "from");
 

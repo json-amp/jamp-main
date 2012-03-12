@@ -17,6 +17,7 @@ public class MQMessageSender implements AmpMessageSender {
     MessageQueueConnection connection;
     Decoder<AmpMessage, String>  messageDecoder = new JampMessageDecoder();
 
+
     
     MQMessageSender(String connectionString, String login, String passcode, String destination) throws IOException {
         MessageURL url = new MessageURL(connectionString);
@@ -40,14 +41,21 @@ public class MQMessageSender implements AmpMessageSender {
     }
 
 
-    private AmpMessage blockUntilReturn(AmpMessage message) throws IOException {
+    private AmpMessage blockUntilReturn(final AmpMessage message) throws IOException {
         final BlockingQueue<AmpMessage> queue = new ArrayBlockingQueue<AmpMessage>(1);
         
         connection.subscribe(message.getToURL().getServiceURI() + "_return", new MessageListener() {
             
             public void onTextMessage(String text) throws Exception {
-                AmpMessage message = messageDecoder.decodeObject(text);
-                queue.offer(message, 1, TimeUnit.SECONDS);
+                AmpMessage replyMessage = messageDecoder.decodeObject(text);
+                if (message.getQueryId().equals(replyMessage.getQueryId())) {
+                    queue.offer(replyMessage, 1, TimeUnit.SECONDS);                    
+                } else {
+                    /* This should never happen for example, but could happen in the real world
+                     * This is why the test STOMP server should probably support ACK, NACK, but not going to for now.
+                     */
+                    connection.send(message.getToURL().getServiceURI() + "_return", message.getPayload());
+                }
 
             }
             
@@ -58,7 +66,7 @@ public class MQMessageSender implements AmpMessageSender {
         });
         
         
-        AmpMessage returnMessage; 
+        AmpMessage returnMessage = null;
         
         try {
             returnMessage = queue.poll(10, TimeUnit.SECONDS);

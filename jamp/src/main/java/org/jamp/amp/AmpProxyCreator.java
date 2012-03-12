@@ -4,9 +4,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import org.jamp.amp.encoder.JampMethodEncoder;
-import org.jamp.amp.encoder.MethodEncoder;
-
 
 /** Creates a proxy object around an interface to expose method to send to remote hosts via STOMP, REST or websockets. 
  *  Takes a method encoder and an invoker.
@@ -15,18 +12,13 @@ import org.jamp.amp.encoder.MethodEncoder;
  *  The encoder encodes the method via Hessian, JSON or BSON.
  **/
 public class AmpProxyCreator {
-	@SuppressWarnings("rawtypes")
-    MethodEncoder methodEncoder;
 	AmpMessageSender invoker;
+    static int messageId = 0;
+
 	
 	public AmpProxyCreator (AmpMessageSender invoker) {
-        this.methodEncoder = new JampMethodEncoder();
         this.invoker = invoker;
  	    
-	}
-	public AmpProxyCreator(@SuppressWarnings("rawtypes") MethodEncoder methodEncoder, AmpMessageSender invoker) {
-		this.methodEncoder = methodEncoder;
-		this.invoker = invoker;
 	}
 	
 	public Object createProxy(final String interface_, final String toURL, final String fromURL) throws Exception {
@@ -36,13 +28,13 @@ public class AmpProxyCreator {
 	public Object createProxy(final Class<?> interface_, final String toURL, final String fromURL) throws Exception {
 
 		InvocationHandler handler = new InvocationHandler() {
-			public Object invoke(Object arg0, Method method, Object[] method_params)
+			public Object invoke(Object arg0, Method method, Object[] params)
 					throws Throwable {
-				Object payload = methodEncoder.encodeMethodForSend(method, method_params, toURL, fromURL);
-				
-				AmpMessage.Type messageType = method.getReturnType().equals(Void.TYPE) ? AmpMessage.Type.SEND : AmpMessage.Type.QUERY;
-				AmpMessage message = new AmpMessage(messageType, toURL, fromURL, method.getName(), null, payload);
-				
+
+			    AmpMessage.Type messageType = method.getReturnType().equals(Void.TYPE) ? AmpMessage.Type.SEND : AmpMessage.Type.QUERY;
+				AmpMessage message = new AmpMessage(messageType, toURL, fromURL, method.getName(), params);
+				messageId ++;
+				message.setQueryId(System.currentTimeMillis() + "-" + messageId + "-"+ (int)(Math.random() * 100000));				
 				invoker.sendMessage(message);
 				return null;
 			}

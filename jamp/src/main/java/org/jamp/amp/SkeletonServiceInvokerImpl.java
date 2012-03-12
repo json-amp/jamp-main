@@ -16,8 +16,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jamp.amp.encoder.Decoder;
-import org.jamp.amp.encoder.JSONDecoder;
-import org.jamp.amp.encoder.JSONEncoder;
 
 
 /** Used to invoke services on the side that acts as the server side. */
@@ -25,29 +23,15 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
     Class<?> clazz;
     Object instance;
 
-    Decoder<Object, Object> argumentDecoder = new JSONDecoder();
-    
-
     SkeletonServiceInvokerImpl() {
-        init();
     }
-	SkeletonServiceInvokerImpl(Class<?> clazz, Object instance,
+
+    SkeletonServiceInvokerImpl(Class<?> clazz, Object instance,
             Decoder<AmpMessage, String> messageDecoder, Decoder<Object, Object> argumentDecoder) {
         this.clazz = clazz;
         this.instance = instance;
-        this.argumentDecoder = argumentDecoder;
-        init();
     }
 	
-    private void init() {
-	    /** The plan is to use look these up with a ServiceLocator so that can be pluggable 
-	     * So you could swap in Jackson or something else for JSON serialization.
-	     */
-        if (argumentDecoder==null) {
-            argumentDecoder = new JSONDecoder();
-        }
-
-	}
 
 	private final Object thisObject() throws Exception {
 	    if (instance==null) {
@@ -58,16 +42,12 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
 	
 	
 
-    @SuppressWarnings("unchecked")	
     public AmpMessage invokeMessage(AmpMessage message) throws Exception {
  	    
-	    argumentDecoder = new JSONDecoder();
-	    List<Object> args = (List<Object>) argumentDecoder.decodeObject(message.getArgs());
-	    
-	    
+	    	    
 	    Object thisObject = thisObject();
-	    Method method = findMethod(message, args, thisObject);
-	    Object [] parameters = coerceArgumentList(args, method.getParameterTypes());
+	    Method method = findMethod(message, thisObject);
+	    Object [] parameters = coerceArgumentList(message.getArgs(), method.getParameterTypes());
 	    Exception exception = null;
 	    Object returnObject = null;
 	    
@@ -90,14 +70,15 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
         } else if (message.getMessageType()==AmpMessage.Type.QUERY && exception == null) {
             returnMessage = new AmpMessage();
             returnMessage.setMessageType(AmpMessage.Type.REPLY);
-            JSONEncoder encoder = new JSONEncoder();
-            String encodedReturn = encoder.encodeObject(returnObject);
-            returnMessage.setReturnObject(encodedReturn);
+            returnMessage.setReplyObject(returnObject);
             
         } 
 	        
 	    
-	        
+	    //Reverse from/to
+	    returnMessage.setTo(message.getFrom());
+	    returnMessage.setFrom(message.getTo());
+	    returnMessage.setQueryId(message.getQueryId());
 	    	    
 	    return returnMessage;
 	    
@@ -259,7 +240,15 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
                 // ok if it did not work. Should maybe do log warn.
             }
         }
-
+        
+        if (instance instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map <String, Object> map = (Map <String, Object>) instance;
+            for (String propName : props) {
+                props.remove(propName);
+                map.put(propName, inputArgument.get(propName));
+            }
+        }
         return instance;
     }
     private void invokeSetterMethod(Class<?> type, Object instance, Method m,
@@ -290,7 +279,7 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
         }
         return setters.toArray(new Method[setters.size()]);
     }
-    private Method findMethod(AmpMessage message, List<Object> args,
+    private Method findMethod(AmpMessage message,
             Object thisObject) {
         Method method = null;
 	    
@@ -299,8 +288,8 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
         System.out.println(message);
 
 	    for (Method m : methods) {
-	        if (m.getName().equals(message.getMethodName())){
-	            if (m.getParameterTypes().length==args.size()) {
+	        if (m.getName().equals(message.getAction())){
+	            if (m.getParameterTypes().length==message.getArgs().size()) {
 	                method = m;
 	                break;
 	            }
