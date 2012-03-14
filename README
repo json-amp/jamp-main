@@ -1,3 +1,7 @@
+4/14/2012
+Took a break. Then a detour into adding WebSockets support. Some websockets support added.
+JAMP can now send/recieve websockets.
+
 4/12/2012
 Gradual progress on router, RPC, message correlation. Getting closer, but not close enough 
 to really start talking about yet.
