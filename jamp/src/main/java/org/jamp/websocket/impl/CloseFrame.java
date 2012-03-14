@@ -81,23 +81,23 @@ public class CloseFrame extends Frame {
 
     public CloseFrame() {
         super(Opcode.CLOSING);
-        setFin(true);
+        setFinished(true);
     }
 
-    public CloseFrame(int code) throws InvalidDataException {
+    public CloseFrame(int code) throws WebSocketException {
         super(Opcode.CLOSING);
-        setFin(true);
+        setFinished(true);
         setCodeAndMessage(code, "");
     }
 
-    public CloseFrame(int code, String m) throws InvalidDataException {
+    public CloseFrame(int code, String m) throws WebSocketException {
         super(Opcode.CLOSING);
-        setFin(true);
+        setFinished(true);
         setCodeAndMessage(code, m);
     }
 
     private void setCodeAndMessage(int code, String m)
-            throws InvalidDataException {
+            throws WebSocketException {
         byte[] by = Charsetfunctions.utf8Bytes(m);
         ByteBuffer buf = ByteBuffer.allocate(4);
         buf.putInt(code);
@@ -108,7 +108,7 @@ public class CloseFrame extends Frame {
         setPayload(pay.array());
     }
 
-    private void initCloseCode() throws InvalidFrameException {
+    private void initCloseCode() throws WebSocketException  {
         code = CloseFrame.NOCODE;
         byte[] payload = getPayloadData();
         if (payload.length >= 2) {
@@ -121,7 +121,7 @@ public class CloseFrame extends Frame {
                 code = CloseFrame.NOCODE;
             if (code < CloseFrame.NORMAL || code > CloseFrame.EXTENSION
                     || code == NOCODE || code == 1004) {
-                throw new InvalidFrameException("bad code " + code);
+                throw new WebSocketException("bad code " + code);
             }
         }
     }
@@ -130,7 +130,7 @@ public class CloseFrame extends Frame {
         return code;
     }
 
-    private void initMessage() throws InvalidDataException {
+    private void initMessage() throws WebSocketException {
         if (code == CloseFrame.NOCODE) {
             reason = Charsetfunctions.stringUtf8(getPayloadData());
         } else {
@@ -150,7 +150,7 @@ public class CloseFrame extends Frame {
     }
 
     @Override
-    public void setPayload(byte[] payload) throws InvalidDataException {
+    public void setPayload(byte[] payload)  throws WebSocketException{
         super.setPayload(payload);
         initCloseCode();
         initMessage();

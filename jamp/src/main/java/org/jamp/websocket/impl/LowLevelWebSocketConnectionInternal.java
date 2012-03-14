@@ -20,12 +20,8 @@ public interface LowLevelWebSocketConnectionInternal {
     /**
      * Send Text data to the other end.
      * 
-     * @throws IllegalArgumentException
-     * @throws InterruptedException
-     * @throws NotYetConnectedException
      */
-    public abstract void send(String text) throws IllegalArgumentException,
-            NotYetConnectedException, InterruptedException;
+    public abstract void send(String text) ;
 
     /**
      * Send Binary data (plain bytes) to the other end.
@@ -33,9 +29,9 @@ public interface LowLevelWebSocketConnectionInternal {
      * @throws IllegalArgumentException
      * @throws InterruptedException
      * @throws NotYetConnectedException
+     * @throws WebSocketException 
      */
-    public abstract void send(byte[] bytes) throws IllegalArgumentException,
-            NotYetConnectedException, InterruptedException;
+    public abstract void send(byte[] bytes);
 
     public abstract InetSocketAddress getRemoteSocketAddress();
 

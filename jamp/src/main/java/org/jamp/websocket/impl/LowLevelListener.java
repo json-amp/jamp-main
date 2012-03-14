@@ -8,26 +8,6 @@ package org.jamp.websocket.impl;
  */
 interface LowLevelListener {
 
-    /**
-     * Called on the server side when the socket connection is first
-     * established, and the WebSocket handshake has been received.
-     * 
-     * @param conn
-     *            The WebSocket related to this event
-     * @param draft
-     *            The protocol draft the client uses to connect
-     * @param request
-     *            The opening http message send by the client. Can be used to
-     *            access additional fields like cookies.
-     * @return Returns an incomplete handshake containing all optional fields
-     * @throws InvalidDataException
-     *             Throwing this exception will cause this handshake to be
-     *             rejected
-     */
-    public HttpHeader onConnectionIsServer(
-            LowLevelWebSocketConnectionInternal conn, HttpHeader request)
-            throws InvalidDataException;
-
 
     /**
      * Called when an entire text frame has been received. Do whatever you want

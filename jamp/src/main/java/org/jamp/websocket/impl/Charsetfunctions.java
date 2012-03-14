@@ -46,11 +46,11 @@ public class Charsetfunctions {
 		}
 	}
 
-	public static String stringUtf8( byte[] bytes ) throws InvalidDataException {
+	public static String stringUtf8( byte[] bytes ) throws WebSocketException {
 		return stringUtf8( bytes, 0, bytes.length );
 	}
 
-	public static String stringUtf8( byte[] bytes, int off, int length ) throws InvalidDataException {
+	public static String stringUtf8( byte[] bytes, int off, int length ) throws WebSocketException {
 		CharsetDecoder decode = Charset.forName( "UTF8" ).newDecoder();
 		decode.onMalformedInput( codingErrorAction );
 		decode.onUnmappableCharacter( codingErrorAction );
@@ -59,7 +59,7 @@ public class Charsetfunctions {
 		try {
 			s = decode.decode( ByteBuffer.wrap( bytes, off, length ) ).toString();
 		} catch ( CharacterCodingException e ) {
-			throw new InvalidDataException( CloseFrame.NO_UTF8, e );
+			throw new WebSocketException( CloseFrame.NO_UTF8, e );
 		}
 		return s;
 	}

@@ -7,18 +7,6 @@ import org.jamp.websocket.impl.Frame.Opcode;
  */
 abstract class LowLevelListenerAdapter implements LowLevelListener {
 
-    /**
-     * This default implementation does not do anything. Go ahead and overwrite
-     * it.
-     * 
-     * @see org.jamp.websocket.impl.LowLevelListener#onWebsocketHandshakeReceivedAsServer(LowLevelWebSocketConnectionInternalImpl,
-     *      Protocol, ClientHandshake)
-     */
-    public HttpHeader onConnectionIsServer(
-            LowLevelWebSocketConnectionInternal conn, HttpHeader request)
-            throws InvalidDataException {
-        return HttpHeader.createServerRequest();
-    }
 
 
     /**

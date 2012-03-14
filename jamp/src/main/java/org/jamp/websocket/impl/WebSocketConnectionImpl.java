@@ -11,6 +11,11 @@ import org.jamp.websocket.SimpleWebSocketListener;
 import org.jamp.websocket.WebSocketConnection;
 import org.jamp.websocket.WebSocketListener;
 
+/**
+ * 
+ * @author Rick Hightower
+ *
+ */
 public class WebSocketConnectionImpl implements WebSocketConnection {
 
     BaseWebSocketListener listener;

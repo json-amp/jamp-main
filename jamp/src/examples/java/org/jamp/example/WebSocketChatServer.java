@@ -5,10 +5,12 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.channels.NotYetConnectedException;
 
 import org.jamp.websocket.impl.HttpHeader;
 import org.jamp.websocket.impl.LowLevelWebSocketConnectionInternal;
 import org.jamp.websocket.impl.Server;
+import org.jamp.websocket.impl.WebSocketException;
 
 /**
  * A simple WebSocketServer implementation. Keeps track of a "chatroom".
@@ -79,8 +81,11 @@ public class WebSocketChatServer extends Server {
 	 *            The String to send across the network.
 	 * @throws InterruptedException
 	 *             When socket related I/O errors occur.
+	 * @throws WebSocketException 
+	 * @throws IllegalArgumentException 
+	 * @throws NotYetConnectedException 
 	 */
-	public void sendToAll( String text ) throws InterruptedException {
+	public void sendToAll( String text ) throws InterruptedException, NotYetConnectedException, IllegalArgumentException, WebSocketException {
 		for( LowLevelWebSocketConnectionInternal c : connections() ) {
 			c.send( text );
 		}

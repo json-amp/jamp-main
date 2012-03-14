@@ -102,7 +102,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
 
     // private Role role;
 
-    private Frame currentframe;
+    private Frame currentFrame;
 
     private HttpHeader handshakerequest = null;
 
@@ -162,57 +162,30 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
 
     }
 
-    boolean handleServerRead() throws IOException, InvalidHandshakeException {
+    boolean handleServerRead() throws IOException, WebSocketException {
         HandshakeState handshakestate = null;
 
         if (handshakeSetup == false) {
-            try {
                 this.setParseMode(role);
                 socketBuffer.reset();
-                HttpHeader tmphandshake = this.translateHandshake(socketBuffer);
-                if (!tmphandshake.isClient()) {
+                HttpHeader handshake = this.translateHandshake(socketBuffer);
+                if (!handshake.isClient()) {
                     closeConnection(CloseFrame.PROTOCOL_ERROR,
                             "wrong http function", false);
                     return true;
                 }
-                HttpHeader handshake = tmphandshake;
                 handshakestate = this.acceptHandshakeAsServer(handshake);
                 if (handshakestate == HandshakeState.MATCHED) {
-                    HttpHeader response;
-                    try {
-                        response = wsl.onConnectionIsServer(
-                                this, handshake);
-                    } catch (InvalidDataException e) {
-                        closeConnection(e.getCloseCode(), e.getMessage(), false);
-                        return true;
-                    }
-                    writeDirect(this.createHandshake(this
-                            .postProcessHandshakeResponseAsServer(handshake,
-                                    response), role));
+                    
+                    HttpHeader asServer = createServerResponseHeader(handshake);
+                    writeDirect(createHandshakeBytes(asServer, role));
 
                     handshakeSetup = true;
-                    open(handshake);
+                    handshakeComplete = true;
+                    wsl.onStart(this, handshake);
                     handleRead();
                     return true;
-                } else if (handshakestate == HandshakeState.MATCHING) {
-                    if (this != null) {
-                        throw new InvalidHandshakeException(
-                                "multible drafts matching");
-                    }
-                    handshakeSetup = true;
-
                 }
-            } catch (InvalidHandshakeException e) {
-                // go on with an other this
-            } catch (IncompleteHandshakeException e) {
-                if (socketBuffer.limit() == socketBuffer.capacity()) {
-                    close(CloseFrame.TOOBIG, "handshake is to big");
-                }
-                // read more bytes for the handshake
-                socketBuffer.position(socketBuffer.limit());
-                socketBuffer.limit(socketBuffer.capacity());
-                return true;
-            }
 
             if (handshakeSetup == false) {
                 close(CloseFrame.PROTOCOL_ERROR, "no this matches");
@@ -223,7 +196,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
 
     }
 
-    boolean handleClientRead() throws IOException, InvalidHandshakeException {
+    boolean handleClientRead() throws IOException, WebSocketException {
         HandshakeState handshakestate = null;
 
         this.setParseMode(role);
@@ -237,7 +210,8 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         handshakestate = this.acceptHandshakeAsClient(handshakerequest,
                 handshake);
         if (handshakestate == HandshakeState.MATCHED) {
-            open(handshake);
+            handshakeComplete = true;
+            wsl.onStart(this, handshake);
             handleRead();
         } else if (handshakestate == HandshakeState.MATCHING) {
             return true;
@@ -292,7 +266,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
                             return;
                         }
                     }
-                } catch (InvalidHandshakeException e) {
+                } catch (WebSocketException e) {
                     close(e);
                 }
             } else {
@@ -300,15 +274,15 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
 
                 try {
                     List<Frame> frames = this.translateFrame(socketBuffer);
-                    for (Frame f : frames) {
+                    for (Frame frame : frames) {
                         if (DEBUG)
-                            System.out.println("matched frame: " + f);
-                        Opcode curop = f.getOpcode();
+                            System.out.println("matched frame: " + frame);
+                        Opcode curop = frame.getOpcode();
                         if (curop == Opcode.CLOSING) {
                             int code = CloseFrame.NOCODE;
                             String reason = "";
-                            if (f instanceof CloseFrame) {
-                                CloseFrame cf = (CloseFrame) f;
+                            if (frame instanceof CloseFrame) {
+                                CloseFrame cf = (CloseFrame) frame;
                                 code = cf.getCloseCode();
                                 reason = cf.getMessage();
                             }
@@ -322,39 +296,40 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
                             }
                             continue;
                         } else if (curop == Opcode.PING) {
-                            wsl.onPing(this, f);
+                            wsl.onPing(this, frame);
                             continue;
                         } else if (curop == Opcode.PONG) {
-                            wsl.onPong(this, f);
+                            wsl.onPong(this, frame);
                             continue;
                         } else {
                             // process non control frames
-                            if (currentframe == null) {
-                                if (f.getOpcode() == Opcode.CONTINIOUS) {
-                                    throw new InvalidFrameException(
+                            if (currentFrame == null) {
+                                if (frame.getOpcode() == Opcode.CONTINIOUS) {
+                                    throw new WebSocketException(CloseFrame.PROTOCOL_ERROR,
                                             "unexpected continious frame");
-                                } else if (f.isFin()) {
+                                } else if (frame.isFinished()) {
                                     // receive normal onframe message
-                                    deliverMessage(f);
+                                    deliverMessage(frame);
                                 } else {
                                     // remember the frame whose payload is about
                                     // to be continued
-                                    currentframe = f;
+                                    currentFrame = frame;
+                                    currentFrame.setSeriesHead(true);
                                 }
-                            } else if (f.getOpcode() == Opcode.CONTINIOUS) {
-                                currentframe.append(f);
-                                if (f.isFin()) {
-                                    deliverMessage(currentframe);
-                                    currentframe = null;
+                            } else if (frame.getOpcode() == Opcode.CONTINIOUS) {
+                                currentFrame.append(frame);
+                                if (frame.isFinished()) {
+                                    deliverMessage(currentFrame);
+                                    currentFrame = null;
                                 }
                             } else {
-                                throw new InvalidDataException(
+                                throw new WebSocketException(
                                         CloseFrame.PROTOCOL_ERROR,
                                         "non control or continious frame expected");
                             }
                         }
                     }
-                } catch (InvalidDataException e1) {
+                } catch (WebSocketException e1) {
                     wsl.errorHandler(this, e1);
                     close(e1);
                     return;
@@ -385,7 +360,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
                 if (this.hasCloseHandshake()) {
                     try {
                         sendFrameDirect(new CloseFrame(code, message));
-                    } catch (InvalidDataException e) {
+                    } catch (WebSocketException e) {
                         wsl.errorHandler(this, e);
                         closeConnection(CloseFrame.ABNROMAL_CLOSE,
                                 "generated frame is invalid", false);
@@ -438,7 +413,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         this.wsl.onWebsocketClose(this, code, message, remote);
         if (this != null)
             this.reset();
-        currentframe = null;
+        currentFrame = null;
         handshakerequest = null;
     }
 
@@ -450,24 +425,31 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         close(code, "");
     }
 
-    public void close(InvalidDataException e) {
+    public void close(WebSocketException e) {
         close(e.getCloseCode(), e.getMessage());
     }
 
-    public void send(String text) throws IllegalArgumentException,
-            NotYetConnectedException, InterruptedException {
+    public void send(String text) {
         if (text == null)
             throw new IllegalArgumentException(
                     "Cannot send 'null' data to a WebSocket.");
-        send(this.createFrames(text, role == Role.CLIENT));
+        try {
+            send(this.createFrames(text, role == Role.CLIENT));
+        } catch (InterruptedException e) {
+            throw new WebSocketException("Problem sending text");
+        }
     }
 
-    public void send(byte[] bytes) throws IllegalArgumentException,
-            NotYetConnectedException, InterruptedException {
+    public void send(byte[] bytes) {
+        
         if (bytes == null)
             throw new IllegalArgumentException(
                     "Cannot send 'null' data to a WebSocket.");
-        send(this.createFrames(bytes, role == Role.CLIENT));
+        try {
+            send(this.createFrames(bytes, role == Role.CLIENT));
+        } catch (InterruptedException e) {
+            throw new WebSocketException("Problem sending bytes");
+        }
     }
 
     private void send(Collection<Frame> frames) throws InterruptedException {
@@ -526,7 +508,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
     }
 
     public void startHandshake(HttpHeader handshakedata)
-            throws InvalidHandshakeException, InterruptedException {
+            throws WebSocketException, InterruptedException {
         if (handshakeComplete)
             throw new IllegalStateException("Handshake has already been sent.");
 
@@ -535,7 +517,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
                 .postProcessHandshakeRequestAsClient(handshakedata);
 
         // Send
-        channelWrite(this.createHandshake(this.handshakerequest, role));
+        channelWrite(this.createHandshakeBytes(this.handshakerequest, role));
     }
 
     private void channelWrite(ByteBuffer buf) throws InterruptedException {
@@ -585,7 +567,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         }
     }
 
-    private void deliverMessage(Frame d) throws InvalidDataException {
+    private void deliverMessage(Frame d) throws WebSocketException {
         if (d.getOpcode() == Opcode.TEXT) {
             wsl.onMessageText(this,
                     Charsetfunctions.stringUtf8(d.getPayloadData()));
@@ -598,13 +580,6 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         }
     }
 
-    private void open(HttpHeader d) throws IOException {
-        if (DEBUG)
-            System.out.println("open using this: "
-                    + this.getClass().getSimpleName());
-        handshakeComplete = true;
-        wsl.onStart(this, d);
-    }
 
     public InetSocketAddress getRemoteSocketAddress() {
         return (InetSocketAddress) sockchannel.socket()
@@ -656,7 +631,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
     /*** **/
 
     public HandshakeState acceptHandshakeAsServer(HttpHeader handshakedata)
-            throws InvalidHandshakeException {
+            throws WebSocketException {
         int v = readVersion(handshakedata);
         if (v == 13)
             return HandshakeState.MATCHED;
@@ -692,7 +667,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
 
     private ByteBuffer incompleteframe;
 
-    public List<ByteBuffer> createHandshake(HttpHeader handshakedata,
+    public List<ByteBuffer> createHandshakeBytes(HttpHeader handshakedata,
             Role ownrole, boolean withcontent) {
         StringBuilder bui = new StringBuilder(100);
         if (handshakedata.isClient()) {
@@ -728,14 +703,13 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
     }
 
     public HttpHeader translateHandshake(ByteBuffer buf)
-            throws InvalidHandshakeException {
+            throws WebSocketException {
         return translateHandshakeHttp(buf, role);
     }
 
-    public int checkAlloc(int bytecount) throws LimitExedeedException,
-            InvalidDataException {
+    public int checkAlloc(int bytecount) throws WebSocketException {
         if (bytecount < 0)
-            throw new InvalidDataException(CloseFrame.PROTOCOL_ERROR,
+            throw new WebSocketException(CloseFrame.PROTOCOL_ERROR,
                     "Negative count");
         return bytecount;
     }
@@ -745,7 +719,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
     }
 
     public HandshakeState acceptHandshakeAsClient(HttpHeader request,
-            HttpHeader response) throws InvalidHandshakeException {
+            HttpHeader response) throws WebSocketException {
         if (!request.hasHeader("Sec-WebSocket-Key")
                 || !response.hasHeader("Sec-WebSocket-Accept"))
             return HandshakeState.NOT_MATCHED;
@@ -767,7 +741,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
                 + (sizebytes > 1 ? sizebytes + 1 : sizebytes) + (mask ? 4 : 0)
                 + mes.length);
         byte optcode = fromOpcode(framedata.getOpcode());
-        byte one = (byte) (framedata.isFin() ? -128 : 0);
+        byte one = (byte) (framedata.isFinished() ? -128 : 0);
         one |= optcode;
         buf.put(one);
         byte[] payloadlengthbytes = toByteArray(mes.length, sizebytes);
@@ -802,30 +776,22 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         return buf;
     }
 
-    public List<Frame> createFrames(byte[] binary, boolean mask) {
+    public List<Frame> createFrames(byte[] binary, boolean mask) throws WebSocketException {
         Frame curframe = new Frame();
-        try {
-            curframe.setPayload(binary);
-        } catch (InvalidDataException e) {
-            throw new NotSendableException(e);
-        }
-        curframe.setFin(true);
+        curframe.setPayload(binary);
+        curframe.setFinished(true);
         curframe.setOptcode(Opcode.BINARY);
-        curframe.setTransferemasked(mask);
+        curframe.setTransferMask(mask);
         return Collections.singletonList((Frame) curframe);
     }
 
-    public List<Frame> createFrames(String text, boolean mask) {
+    public List<Frame> createFrames(String text, boolean mask) throws WebSocketException {
         Frame curframe = new Frame();
         byte[] pay = Charsetfunctions.utf8Bytes(text);
-        try {
-            curframe.setPayload(pay);
-        } catch (InvalidDataException e) {
-            throw new NotSendableException(e);
-        }
-        curframe.setFin(true);
+        curframe.setPayload(pay);
+        curframe.setFinished(true);
         curframe.setOptcode(Opcode.TEXT);
-        curframe.setTransferemasked(mask);
+        curframe.setTransferMask(mask);
         return Collections.singletonList((Frame) curframe);
     }
 
@@ -873,8 +839,11 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         return request;
     }
 
-    public HttpHeader postProcessHandshakeResponseAsServer(HttpHeader request,
-            HttpHeader response) throws InvalidHandshakeException {
+    public HttpHeader createServerResponseHeader(HttpHeader request) throws WebSocketException {
+        
+        
+        HttpHeader response = HttpHeader.createServerRequest();
+
         response.putHeader("Upgrade", "websocket");
         response.putHeader("Connection", request.getHeader("Connection")); // to
                                                                            // respond
@@ -886,7 +855,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         response.setHttpStatusMessage("Switching Protocols");
         String seckey = request.getHeader("Sec-WebSocket-Key");
         if (seckey == null)
-            throw new InvalidHandshakeException("missing Sec-WebSocket-Key");
+            throw new WebSocketException("missing Sec-WebSocket-Key");
         response.putHeader("Sec-WebSocket-Accept", generateFinalKey(seckey));
         return response;
     }
@@ -900,7 +869,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         return buffer;
     }
 
-    private Opcode toOpcode(byte opcode) throws InvalidFrameException {
+    private Opcode toOpcode(byte opcode) throws WebSocketException {
         switch (opcode) {
         case 0:
             return Opcode.CONTINIOUS;
@@ -917,12 +886,12 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
             return Opcode.PONG;
             // 11-15 are not yet defined
         default:
-            throw new InvalidFrameException("unknow optcode " + (short) opcode);
+            throw new WebSocketException(CloseFrame.PROTOCOL_ERROR, "unknown opcode " + (short) opcode);
         }
     }
 
     public List<Frame> translateFrame(ByteBuffer buffer)
-            throws LimitExedeedException, InvalidDataException {
+            throws WebSocketException {
         List<Frame> frames = new LinkedList<Frame>();
         Frame cur;
 
@@ -998,7 +967,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
     }
 
     public Frame translateSingleFrame(ByteBuffer buffer)
-            throws IncompleteException, InvalidDataException {
+            throws IncompleteException, WebSocketException {
         int maxpacketsize = buffer.limit() - buffer.position();
         int realpacketsize = 2;
         if (maxpacketsize < realpacketsize)
@@ -1007,7 +976,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         boolean FIN = b1 >> 8 != 0;
         byte rsv = (byte) ((b1 & ~(byte) 128) >> 4);
         if (rsv != 0)
-            throw new InvalidFrameException("bad rsv " + rsv);
+            throw new WebSocketException(CloseFrame.PROTOCOL_ERROR, "bad rsv " + rsv);
         byte b2 = buffer.get( /* 1 */);
         boolean MASK = (b2 & -128) != 0;
         int payloadlength = (byte) (b2 & ~(byte) 128);
@@ -1016,7 +985,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         if (!FIN) {
             if (optcode == Opcode.PING || optcode == Opcode.PONG
                     || optcode == Opcode.CLOSING) {
-                throw new InvalidFrameException(
+                throw new WebSocketException(CloseFrame.PROTOCOL_ERROR,
                         "control frames may no be fragmented");
             }
         }
@@ -1025,7 +994,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         } else {
             if (optcode == Opcode.PING || optcode == Opcode.PONG
                     || optcode == Opcode.CLOSING) {
-                throw new InvalidFrameException("more than 125 octets");
+                throw new WebSocketException("more than 125 octets");
             }
             if (payloadlength == 126) {
                 realpacketsize += 2; // additional length bytes
@@ -1045,7 +1014,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
                 }
                 long length = new BigInteger(bytes).longValue();
                 if (length > Integer.MAX_VALUE) {
-                    throw new LimitExedeedException("Payloadsize is to big...");
+                    throw new WebSocketException(CloseFrame.TOOBIG, "Payloadsize is to big...");
                 } else {
                     payloadlength = (int) length;
                 }
@@ -1077,7 +1046,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
             frame = new CloseFrame();
         } else {
             frame = new Frame();
-            frame.setFin(FIN);
+            frame.setFinished(FIN);
             frame.setOptcode(optcode);
         }
         frame.setPayload(payload.array());
@@ -1135,18 +1104,18 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
     }
 
     public static HttpHeader translateHandshakeHttp(ByteBuffer buf, Role role)
-            throws InvalidHandshakeException {
+            throws WebSocketException {
         HttpHeader handshake;
 
         String line = readStringLine(buf);
         if (line == null)
-            throw new InvalidHandshakeException(
+            throw new WebSocketException(
                     "could not match http status line");
 
         String[] firstLineTokens = line.split(" ", 3);// eg. HTTP/1.1 101
                                                       // Switching the Protocols
         if (firstLineTokens.length != 3) {
-            throw new InvalidHandshakeException();
+            throw new WebSocketException("Token length of HTTP is wrong");
         }
 
         if (role == Role.CLIENT) {
@@ -1163,7 +1132,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         while (line != null && line.length() > 0) {
             String[] pair = line.split(":", 2);
             if (pair.length != 2)
-                throw new InvalidHandshakeException("not an http header");
+                throw new WebSocketException("not an http header");
             handshake.putHeader(pair[0], pair[1].replaceFirst("^ +", ""));
             line = readStringLine(buf);
         }
@@ -1176,9 +1145,9 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
                         .toLowerCase(Locale.ENGLISH).contains("upgrade");
     }
 
-    public List<ByteBuffer> createHandshake(HttpHeader handshakedata,
+    public List<ByteBuffer> createHandshakeBytes(HttpHeader handshakedata,
             Role ownrole) {
-        return createHandshake(handshakedata, ownrole, true);
+        return createHandshakeBytes(handshakedata, ownrole, true);
     }
 
     private Thread thread;
@@ -1236,7 +1205,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
                                                                   // error to
                                                                   // only
                             break;
-                        } catch (InvalidHandshakeException e) {
+                        } catch (WebSocketException e) {
                             this.close(e); // http error
                             this.flush();
                         }
@@ -1271,7 +1240,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         this.sockchannel = null;
     }
 
-    private void finishConnect() throws IOException, InvalidHandshakeException,
+    private void finishConnect() throws IOException, WebSocketException,
             InterruptedException {
         if (sockchannel.isConnectionPending()) {
             sockchannel.finishConnect();

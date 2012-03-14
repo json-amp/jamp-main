@@ -1,8 +1,14 @@
 package org.jamp.websocket.impl;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
-
+/**
+ * 
+ * @author Rick Hightower
+ *
+ */
 public class Frame {
 
     public enum Opcode {
@@ -10,72 +16,88 @@ public class Frame {
         // more to come
     }
 
-    protected static byte[] emptyarray = {};
-    protected boolean fin;
+    protected static final byte[] emptyarray = {};
+    protected boolean finished;
     protected Opcode optcode;
-    private ByteBuffer unmaskedpayload;
-    protected boolean transferemasked;
+    private ByteBuffer payLoadBuffer;
+    protected boolean transferMask;
 
     public Frame() {
     }
 
     public Frame(Opcode op) {
         this.optcode = op;
-        unmaskedpayload = ByteBuffer.wrap(emptyarray);
+        payLoadBuffer = ByteBuffer.wrap(emptyarray);
     }
 
     public Frame(Frame f) {
-        fin = f.isFin();
+        finished = f.isFinished();
         optcode = f.getOpcode();
-        unmaskedpayload = ByteBuffer.wrap(f.getPayloadData());
-        transferemasked = f.getTransfereMasked();
+        payLoadBuffer = ByteBuffer.wrap(f.getPayloadData());
+        transferMask = f.isTransferMask();
     }
 
-    public boolean isFin() {
-        return fin;
+    public boolean isFinished() {
+        return finished;
     }
 
     public Opcode getOpcode() {
         return optcode;
     }
 
-    public boolean getTransfereMasked() {
-        return transferemasked;
+    public boolean isTransferMask() {
+        return transferMask;
     }
 
     public byte[] getPayloadData() {
-        return unmaskedpayload.array();
+        if (!head) {
+            return payLoadBuffer.array();
+        } else {
+            int size = 0;
+            List <byte[]> buffers = new ArrayList<byte[]>();
+            if (payLoadBuffer!=null) {
+                byte[] buffer = payLoadBuffer.array();
+                size += buffer.length;
+                buffers.add(buffer);
+            }
+            for (Frame frame : payloadFrameSeries) {
+                byte[] buffer = frame.payLoadBuffer.array();
+                size += buffer.length;
+                buffers.add(buffer);
+            }
+            
+            ByteBuffer byteBuffer = ByteBuffer.allocate(size);
+            
+            for (byte[] buf : buffers) {
+                byteBuffer.put(buf);
+            }
+            
+            return byteBuffer.array();
+
+        }
     }
 
-    public void setFin(boolean fin) {
-        this.fin = fin;
+    public void setFinished(boolean fin) {
+        this.finished = fin;
     }
 
     public void setOptcode(Opcode optcode) {
         this.optcode = optcode;
     }
 
-    public void setPayload(byte[] payload) throws InvalidDataException {
-        unmaskedpayload = ByteBuffer.wrap(payload);
+    public void setPayload(byte[] payload) throws WebSocketException  {
+        payLoadBuffer = ByteBuffer.wrap(payload);
     }
 
-    public void setTransferemasked(boolean transferemasked) {
-        this.transferemasked = transferemasked;
+    public void setTransferMask(boolean transferMask) {
+        this.transferMask = transferMask;
     }
 
-    public void append(Frame nextframe) throws InvalidFrameException {
-        if (unmaskedpayload == null) {
-            unmaskedpayload = ByteBuffer.wrap(nextframe.getPayloadData());
-        } else {
-            // TODO might be inefficient. Cosider a global buffer pool
-            ByteBuffer tmp = ByteBuffer
-                    .allocate(nextframe.getPayloadData().length
-                            + unmaskedpayload.capacity());
-            tmp.put(unmaskedpayload.array());
-            tmp.put(nextframe.getPayloadData());
-            unmaskedpayload = tmp;
-        }
-        fin = nextframe.isFin();
+    List <Frame> payloadFrameSeries;
+    
+    public void append(Frame nextFrameInSeries)  {
+          payloadFrameSeries.add(nextFrameInSeries);
+          finished = nextFrameInSeries.finished;
     }
 
     @Override
@@ -83,12 +105,18 @@ public class Frame {
         return "Framedata{ optcode:"
                 + getOpcode()
                 + ", fin:"
-                + isFin()
+                + isFinished()
                 + ", payloadlength:"
-                + unmaskedpayload.limit()
+                + payLoadBuffer.limit()
                 + ", payload:"
                 + Charsetfunctions
-                        .utf8Bytes(new String(unmaskedpayload.array())) + "}";
+                        .utf8Bytes(new String(payLoadBuffer.array())) + "}";
+    }
+
+    boolean head;
+    public void setSeriesHead(boolean b) {
+        head = true;
+        payloadFrameSeries = new ArrayList<Frame>();
     }
 
 }

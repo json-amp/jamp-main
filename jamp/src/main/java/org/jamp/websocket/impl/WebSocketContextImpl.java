@@ -7,6 +7,11 @@ import java.io.Writer;
 
 import org.jamp.websocket.WebSocketContext;
 
+/**
+ * 
+ * @author Rick Hightower
+ *
+ */
 public class WebSocketContextImpl implements WebSocketContext {
     
     LowLevelWebSocketConnectionInternal connection;
