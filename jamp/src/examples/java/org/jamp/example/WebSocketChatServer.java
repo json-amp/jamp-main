@@ -1,0 +1,88 @@
+package org.jamp.example;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+
+import org.jamp.websocket.impl.HttpHeader;
+import org.jamp.websocket.impl.LowLevelWebSocketConnectionInternal;
+import org.jamp.websocket.impl.Server;
+
+/**
+ * A simple WebSocketServer implementation. Keeps track of a "chatroom".
+ */
+public class WebSocketChatServer extends Server {
+
+	public WebSocketChatServer( int port ) throws UnknownHostException {
+		super( new InetSocketAddress( InetAddress.getByName( "localhost" ), port ) );
+	}
+	
+
+	@Override
+	public void onOpen( LowLevelWebSocketConnectionInternal conn, HttpHeader handshake ) {
+		try {
+			this.sendToAll( conn + " entered the room!" );
+		} catch ( InterruptedException ex ) {
+			ex.printStackTrace();
+		}
+		System.out.println( conn + " entered the room!" );
+	}
+
+	@Override
+	public void onClose( LowLevelWebSocketConnectionInternal conn, int code, String reason, boolean remote ) {
+		try {
+			this.sendToAll( conn + " has left the room!" );
+		} catch ( InterruptedException ex ) {
+			ex.printStackTrace();
+		}
+		System.out.println( conn + " has left the room!" );
+	}
+
+	@Override
+	public void onMessage( LowLevelWebSocketConnectionInternal conn, String message ) {
+		try {
+			this.sendToAll( conn + ": " + message );
+		} catch ( InterruptedException ex ) {
+			ex.printStackTrace();
+		}
+		System.out.println( conn + ": " + message );
+	}
+
+	public static void main( String[] args ) throws InterruptedException , IOException {
+		int port = 8887;
+		try {
+			port = Integer.parseInt( args[ 0 ] );
+		} catch ( Exception ex ) {
+		}
+		WebSocketChatServer s = new WebSocketChatServer( port );
+		s.start();
+		System.out.println( "ChatServer started on port: " + s.getPort() );
+
+		BufferedReader sysin = new BufferedReader( new InputStreamReader( System.in ) );
+		while ( true ) {
+			String in = sysin.readLine();
+			s.sendToAll( in );
+		}
+	}
+
+	@Override
+	public void onError( LowLevelWebSocketConnectionInternal conn, Exception ex ) {
+		ex.printStackTrace();
+	}
+
+	/**
+	 * Sends <var>text</var> to all currently connected WebSocket clients.
+	 * 
+	 * @param text
+	 *            The String to send across the network.
+	 * @throws InterruptedException
+	 *             When socket related I/O errors occur.
+	 */
+	public void sendToAll( String text ) throws InterruptedException {
+		for( LowLevelWebSocketConnectionInternal c : connections() ) {
+			c.send( text );
+		}
+	}
+}
