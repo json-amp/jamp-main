@@ -639,7 +639,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
     }
 
     @SuppressWarnings("serial")
-    class IncompleteException extends Throwable {
+    class IncompleteException extends RuntimeException {
         private int preferedsize;
 
         public IncompleteException(int preferedsize) {
@@ -826,16 +826,11 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
 
     public HttpHeader postProcessHandshakeRequestAsClient(HttpHeader request) {
         request.putHeader("Upgrade", "websocket");
-        request.putHeader("Connection", "Upgrade"); // to respond to a
-                                                    // Connection keep
-        // alives
-        request.putHeader("Sec-WebSocket-Version", "13");// overwriting the
-                                                         // previous
-
+        request.putHeader("Connection", "Upgrade");
+        request.putHeader("Sec-WebSocket-Version", "13");
         byte[] random = new byte[16];
         new Random().nextBytes(random);
         request.putHeader("Sec-WebSocket-Key", Base64.encodeBytes(random));
-
         return request;
     }
 
@@ -845,13 +840,7 @@ public final class LowLevelWebSocketConnectionInternalImpl implements LowLevelWe
         HttpHeader response = HttpHeader.createServerRequest();
 
         response.putHeader("Upgrade", "websocket");
-        response.putHeader("Connection", request.getHeader("Connection")); // to
-                                                                           // respond
-                                                                           // to
-                                                                           // a
-                                                                           // Connection
-                                                                           // keep
-                                                                           // alives
+        response.putHeader("Connection", request.getHeader("Connection"));
         response.setHttpStatusMessage("Switching Protocols");
         String seckey = request.getHeader("Sec-WebSocket-Key");
         if (seckey == null)
