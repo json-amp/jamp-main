@@ -2,9 +2,9 @@ package org.jamp.amp.encoder;
 
 import static org.junit.Assert.*;
 
-import org.jamp.amp.encoder.Encoder;
-import org.jamp.amp.encoder.JSONDecoder;
-import org.jamp.amp.encoder.JSONEncoder;
+import org.jamp.Encoder;
+import org.jamp.impl.JSONDecoder;
+import org.jamp.impl.JSONEncoder;
 import org.junit.Test;
 
 

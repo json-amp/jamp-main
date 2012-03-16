@@ -6,8 +6,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.Map;
 
-import org.jamp.amp.encoder.Decoder;
-import org.jamp.amp.encoder.JSONDecoder;
+import org.jamp.Decoder;
+import org.jamp.impl.JSONDecoder;
 import org.junit.Test;
 
 @SuppressWarnings({"rawtypes", "unchecked"})

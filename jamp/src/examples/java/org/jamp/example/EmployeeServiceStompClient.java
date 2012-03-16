@@ -3,22 +3,22 @@ package org.jamp.example;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jamp.amp.AmpFactory;
-import org.jamp.amp.AmpMessageSender;
-import org.jamp.amp.AmpProxyCreator;
+import org.jamp.JampMessageSender;
+import org.jamp.JampProxyCreator;
 import org.jamp.example.model.AddressBook;
 import org.jamp.example.model.Employee;
 import org.jamp.example.model.EmployeeService;
+import org.jamp.impl.JampFactoryImpl;
 
 
 public class EmployeeServiceStompClient {
     
     public static void main (String [] args) throws Exception {
         
-        AmpMessageSender sender = AmpFactory.factory().createMQMessageSender("stomp://localhost:6666/foo", 
+        JampMessageSender sender = JampFactoryImpl.factory().createMQMessageSender("stomp://localhost:6666/foo", 
                 "rick", "rick", "queue/empService");
         
-        AmpProxyCreator ampProxy = new AmpProxyCreator( sender );
+        JampProxyCreator ampProxy = new JampProxyCreator( sender );
         
         EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class, "stomp://localhost:6666/foo", "stomp://localhost:6666/foo");
         

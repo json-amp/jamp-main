@@ -3,11 +3,11 @@ package org.jamp.example;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jamp.amp.AmpProxyCreator;
-import org.jamp.amp.HttpMessageSender;
+import org.jamp.JampProxyCreator;
 import org.jamp.example.model.AddressBook;
 import org.jamp.example.model.Employee;
 import org.jamp.example.model.EmployeeService;
+import org.jamp.impl.HttpMessageSender;
 
 
 public class JampURLSenderMain {
@@ -15,7 +15,7 @@ public class JampURLSenderMain {
 
 	public static void main (String [] args) throws Exception {
 		
-		AmpProxyCreator ampProxy = new AmpProxyCreator(new HttpMessageSender() );
+		JampProxyCreator ampProxy = new JampProxyCreator(new HttpMessageSender() );
 		
 		EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class, "http://localhost:8080/jamp_servlet/JampServlet", "from");
 

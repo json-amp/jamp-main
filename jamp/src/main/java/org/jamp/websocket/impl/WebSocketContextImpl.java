@@ -14,10 +14,10 @@ import org.jamp.websocket.WebSocketContext;
  */
 public class WebSocketContextImpl implements WebSocketContext {
     
-    LowLevelWebSocketConnectionInternal connection;
+    WebSocketInternal connection;
     
 
-    WebSocketContextImpl (LowLevelWebSocketConnectionInternal ws) {
+    WebSocketContextImpl (WebSocketInternal ws) {
         this.connection = ws;
     }
     public BufferedOutputStream startBinaryMessage() throws IOException {

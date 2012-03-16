@@ -2,9 +2,9 @@ package org.jamp.amp.stomp;
 
 import java.io.IOException;
 
-import org.jamp.amp.MessageQueueConnection;
-import org.jamp.amp.stomp.MessageListener;
-import org.jamp.amp.stomp.StompConnection;
+import org.jamp.MessageQueueConnection;
+import org.jamp.impl.MQMessageListener;
+import org.jamp.impl.StompConnection;
 import org.junit.Test;
 
 
@@ -18,7 +18,7 @@ public class StompConnectionTest {
         
         connection.send("queue/bob", "love_rocket");
         
-        MessageListener messageListener = new MessageListener() {
+        MQMessageListener messageListener = new MQMessageListener() {
             
             public void onTextMessage(String text) {
                 System.out.println("GOT MESSAGE    " + text);

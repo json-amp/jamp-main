@@ -13,10 +13,10 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      * This default implementation does not do anything. Go ahead and overwrite
      * it.
      * 
-     * @see org.jamp.websocket.impl.LowLevelListener#onMessageText(LowLevelWebSocketConnectionInternalImpl,
+     * @see org.jamp.websocket.impl.LowLevelListener#onMessageText(WebSocketInternalImpl,
      *      String)
      */
-    public void onMessageText(LowLevelWebSocketConnectionInternal conn, String message) {
+    public void onMessageText(WebSocketInternal conn, String message) {
     }
 
     /**
@@ -26,7 +26,7 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      * @see @see org.java_websocket.WebSocketListener#onWebsocketOpen(WebSocket,
      *      Handshakedata)
      */
-    public void onStart(LowLevelWebSocketConnectionInternalImpl conn,
+    public void onStart(WebSocketInternalImpl conn,
             HttpHeader handshake) {
     }
 
@@ -38,7 +38,7 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      *      org.java_websocket.WebSocketListener#onWebsocketClose(WebSocket,
      *      int, String, boolean)
      */
-    public void onWebsocketClose(LowLevelWebSocketConnectionInternal conn, int code,
+    public void onWebsocketClose(WebSocketInternal conn, int code,
             String reason, boolean remote) {
     }
 
@@ -50,7 +50,7 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      *      org.java_websocket.WebSocketListener#onWebsocketMessage(WebSocket,
      *      byte[])
      */
-    public void onMessageBinary(LowLevelWebSocketConnectionInternal conn, byte[] blob) {
+    public void onMessageBinary(WebSocketInternal conn, byte[] blob) {
     }
 
     /**
@@ -60,7 +60,7 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      * @see @see org.java_websocket.WebSocketListener#onWebsocketPing(WebSocket,
      *      Framedata)
      */
-    public void onPing(LowLevelWebSocketConnectionInternalImpl conn, Frame f) {
+    public void onPing(WebSocketInternalImpl conn, Frame f) {
         Frame resp = new Frame(f);
         resp.setOptcode(Opcode.PONG);
         try {
@@ -77,7 +77,7 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      * @see @see org.java_websocket.WebSocketListener#onWebsocketPong(WebSocket,
      *      Framedata)
      */
-    public void onPong(LowLevelWebSocketConnectionInternal conn, Frame f) {
+    public void onPong(WebSocketInternal conn, Frame f) {
     }
 
     /**
@@ -88,11 +88,11 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      *      org.java_websocket.WebSocketListener#onWebsocketError(WebSocket,
      *      Exception)
      */
-    public void errorHandler(LowLevelWebSocketConnectionInternal conn, Exception ex) {
+    public void errorHandler(WebSocketInternal conn, Exception ex) {
         ex.printStackTrace(); //add some logging here... TODO
     }
     
-    public void onWriteDemand(LowLevelWebSocketConnectionInternal conn) {
+    public void onWriteDemand(WebSocketInternal conn) {
     }
 
 

@@ -1,6 +1,11 @@
 package org.jamp.websocket.impl;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,14 +114,49 @@ public class Frame {
                 + ", payloadlength:"
                 + payLoadBuffer.limit()
                 + ", payload:"
-                + Charsetfunctions
-                        .utf8Bytes(new String(payLoadBuffer.array())) + "}";
+                + convertToUTF8Bytes(new String(payLoadBuffer.array())) + "}";
     }
 
     boolean head;
+    
     public void setSeriesHead(boolean b) {
         head = true;
         payloadFrameSeries = new ArrayList<Frame>();
     }
+
+    public void setPayload(String text) {
+        this.setPayload(convertToUTF8Bytes(text));
+
+    }
+    byte[] convertToUTF8Bytes( String s ) {
+        try {
+            return s.getBytes( "UTF8" );
+        } catch ( UnsupportedEncodingException e ) {
+            throw new RuntimeException( e );
+        }
+    }
+    
+    String stringUtf8( byte[] bytes ) throws WebSocketException {
+        return stringUtf8( bytes, 0, bytes.length );
+    }
+
+    String stringUtf8( byte[] bytes, int off, int length ) throws WebSocketException {
+        CharsetDecoder decode = Charset.forName( "UTF8" ).newDecoder();
+        decode.onMalformedInput( CodingErrorAction.REPORT );
+        decode.onUnmappableCharacter( CodingErrorAction.REPORT );
+        String s;
+        try {
+            ByteBuffer byteBuffer = ByteBuffer.wrap( bytes, off, length );
+            s = decode.decode( byteBuffer ).toString();
+        } catch ( CharacterCodingException e ) {
+            throw new WebSocketException( CloseFrame.NO_UTF8, e );
+        }
+        return s;
+    }
+
+    public String getPayloadDataAsUTF8() {
+        return this.stringUtf8(getPayloadData());
+    }
+
 
 }

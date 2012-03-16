@@ -2,7 +2,7 @@ package org.jamp.amp.encoder;
 
 import static org.junit.Assert.assertTrue;
 
-import org.jamp.amp.encoder.JSONStringDecoder;
+import org.jamp.impl.JSONStringDecoder;
 import org.junit.Test;
 
 

@@ -4,9 +4,10 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jamp.amp.AmpMessage;
+import org.jamp.JampMessage;
 import org.jamp.example.model.AddressBook;
 import org.jamp.example.model.Employee;
+import org.jamp.impl.JampMessageEncoder;
 import org.junit.Test;
 
 
@@ -27,7 +28,7 @@ public class JampMethodEncoderTest {
         List <Object> args = new ArrayList<Object>();
 
         
-        AmpMessage message = new AmpMessage("send");
+        JampMessage message = new JampMessage("send");
         message.setAction("addEmployee");
         message.setArgs(args);
         

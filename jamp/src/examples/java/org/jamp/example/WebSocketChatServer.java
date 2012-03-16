@@ -8,14 +8,14 @@ import java.net.UnknownHostException;
 import java.nio.channels.NotYetConnectedException;
 
 import org.jamp.websocket.impl.HttpHeader;
-import org.jamp.websocket.impl.LowLevelWebSocketConnectionInternal;
-import org.jamp.websocket.impl.Server;
+import org.jamp.websocket.impl.WebSocketInternal;
+import org.jamp.websocket.impl.WebSocketServer;
 import org.jamp.websocket.impl.WebSocketException;
 
 /**
  * A simple WebSocketServer implementation. Keeps track of a "chatroom".
  */
-public class WebSocketChatServer extends Server {
+public class WebSocketChatServer extends WebSocketServer {
 
 	public WebSocketChatServer( int port ) throws UnknownHostException {
 		super( new InetSocketAddress( InetAddress.getByName( "localhost" ), port ) );
@@ -23,7 +23,7 @@ public class WebSocketChatServer extends Server {
 	
 
 	@Override
-	public void onOpen( LowLevelWebSocketConnectionInternal conn, HttpHeader handshake ) {
+	public void onOpen( WebSocketInternal conn, HttpHeader handshake ) {
 		try {
 			this.sendToAll( conn + " entered the room!" );
 		} catch ( InterruptedException ex ) {
@@ -33,7 +33,7 @@ public class WebSocketChatServer extends Server {
 	}
 
 	@Override
-	public void onClose( LowLevelWebSocketConnectionInternal conn, int code, String reason, boolean remote ) {
+	public void onClose( WebSocketInternal conn, int code, String reason, boolean remote ) {
 		try {
 			this.sendToAll( conn + " has left the room!" );
 		} catch ( InterruptedException ex ) {
@@ -43,7 +43,7 @@ public class WebSocketChatServer extends Server {
 	}
 
 	@Override
-	public void onMessage( LowLevelWebSocketConnectionInternal conn, String message ) {
+	public void onMessage( WebSocketInternal conn, String message ) {
 		try {
 			this.sendToAll( conn + ": " + message );
 		} catch ( InterruptedException ex ) {
@@ -70,7 +70,7 @@ public class WebSocketChatServer extends Server {
 	}
 
 	@Override
-	public void onError( LowLevelWebSocketConnectionInternal conn, Exception ex ) {
+	public void onError( WebSocketInternal conn, Exception ex ) {
 		ex.printStackTrace();
 	}
 
@@ -86,7 +86,7 @@ public class WebSocketChatServer extends Server {
 	 * @throws NotYetConnectedException 
 	 */
 	public void sendToAll( String text ) throws InterruptedException, NotYetConnectedException, IllegalArgumentException, WebSocketException {
-		for( LowLevelWebSocketConnectionInternal c : connections() ) {
+		for( WebSocketInternal c : connections() ) {
 			c.send( text );
 		}
 	}

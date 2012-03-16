@@ -3,12 +3,12 @@ package org.jamp.example;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jamp.amp.AmpProxyCreator;
-import org.jamp.amp.FileMessageSender;
+import org.jamp.JampProxyCreator;
 
 import org.jamp.example.model.AddressBook;
 import org.jamp.example.model.Employee;
 import org.jamp.example.model.EmployeeService;
+import org.jamp.impl.FileMessageSender;
 
 
 public class JampFileSenderMain {
@@ -16,7 +16,7 @@ public class JampFileSenderMain {
 
 	public static void main (String [] args) throws Exception {
 		
-		AmpProxyCreator ampProxy = new AmpProxyCreator(new FileMessageSender("/Users/rick/test/file_invoker") );
+		JampProxyCreator ampProxy = new JampProxyCreator(new FileMessageSender("/Users/rick/test/file_invoker") );
         EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class, "to", "from");
 		
         List<AddressBook> books = new ArrayList<AddressBook>();

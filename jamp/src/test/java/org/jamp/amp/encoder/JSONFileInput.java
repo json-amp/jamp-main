@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.jamp.amp.encoder.Decoder;
-import org.jamp.amp.encoder.JSONDecoder;
+import org.jamp.Decoder;
+import org.jamp.impl.JSONDecoder;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 

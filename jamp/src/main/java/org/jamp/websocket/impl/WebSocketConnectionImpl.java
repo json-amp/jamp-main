@@ -20,7 +20,7 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
 
     BaseWebSocketListener listener;
     URI uri;
-    LowLevelWebSocketConnectionInternal connection = null;
+    WebSocketInternal connection = null;
     WebSocketContextImpl context;
 
     public void connect(String connectionURI, WebSocketListener listener)
@@ -60,19 +60,19 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
         }
         this.listener = base;
         this.uri = uri;
-        connection = LowLevelWebSocketConnectionInternalImpl.createClientWebSocket(
+        connection = WebSocketInternalImpl.createClientWebSocket(
                 new LowLevelListenerAdapter() {
                     public void onMessageBinary(
-                            LowLevelWebSocketConnectionInternal conn, byte[] blob) {
+                            WebSocketInternal conn, byte[] blob) {
                         onMessage(conn, blob);
 
                     }
 
                     public void onMessageText(
-                            LowLevelWebSocketConnectionInternal conn, String text) {
+                            WebSocketInternal conn, String text) {
                         onMessage(conn, text);
                     }
-                    public void onStart(LowLevelWebSocketConnectionInternalImpl conn,
+                    public void onStart(WebSocketInternalImpl conn,
                             HttpHeader handshake) {
                        try {
                             listener.onStart(context);
@@ -80,7 +80,7 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
                             e.printStackTrace(); //Log this better TODO
                         }
                     }
-                    public void onWebsocketClose(LowLevelWebSocketConnectionInternal conn, int code,
+                    public void onWebsocketClose(WebSocketInternal conn, int code,
                             String reason, boolean remote) {
                          
                          try {
@@ -98,7 +98,7 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
                      }
                     
                     
-                    public void errorHandler(LowLevelWebSocketConnectionInternal conn, Exception ex) {
+                    public void errorHandler(WebSocketInternal conn, Exception ex) {
                         ex.printStackTrace();
                     }
 
@@ -113,7 +113,7 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
 
     }
 
-    private void onMessage(LowLevelWebSocketConnectionInternal conn, String text) {
+    private void onMessage(WebSocketInternal conn, String text) {
 
         try {
 
@@ -131,7 +131,7 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
 
     }
 
-    private void onMessage(LowLevelWebSocketConnectionInternal conn, byte[] buffer) {
+    private void onMessage(WebSocketInternal conn, byte[] buffer) {
         try {
 
             if (listener instanceof WebSocketListener) {

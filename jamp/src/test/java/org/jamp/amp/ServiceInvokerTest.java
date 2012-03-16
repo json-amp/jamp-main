@@ -6,28 +6,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jamp.amp.AmpFactory;
-import org.jamp.amp.SkeletonServiceInvoker;
-import org.jamp.amp.encoder.Decoder;
-import org.jamp.amp.encoder.JampMessageDecoder;
-import org.jamp.amp.encoder.JampMessageEncoder;
+import org.jamp.JampMessage;
+import org.jamp.Decoder;
+import org.jamp.SkeletonServiceInvoker;
 import org.jamp.example.model.AddressBook;
 import org.jamp.example.model.Employee;
 import org.jamp.example.model.EmployeeServiceImpl;
+import org.jamp.impl.JampFactoryImpl;
+import org.jamp.impl.JampMessageDecoder;
+import org.jamp.impl.JampMessageEncoder;
 import org.junit.Test;
 
 
 
 public class ServiceInvokerTest {
     
-    Decoder <AmpMessage, String> messageDecoder = new JampMessageDecoder();
+    Decoder <JampMessage, String> messageDecoder = new JampMessageDecoder();
 
 
     @Test
     public void invokerTest() throws Exception {
         Object methodEncodedAsMessage = getMethodEncodedAsMessage();
         System.out.println(methodEncodedAsMessage);
-        SkeletonServiceInvoker serviceInvoker = AmpFactory.factory().createJampServerSkeleton(EmployeeServiceImpl.class);
+        SkeletonServiceInvoker serviceInvoker = JampFactoryImpl.factory().createJampServerSkeleton(EmployeeServiceImpl.class);
         serviceInvoker.invokeMessage(messageDecoder.decodeObject((String)methodEncodedAsMessage));
         
     }
@@ -60,7 +61,7 @@ public class ServiceInvokerTest {
         args.add(2);
         args.add("hello dolly");
         
-        AmpMessage message = new AmpMessage("send");
+        JampMessage message = new JampMessage("send");
         
         message.setAction("addEmployee");
         message.setArgs(args);

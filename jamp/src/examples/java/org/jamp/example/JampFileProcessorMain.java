@@ -4,18 +4,18 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 
-import org.jamp.amp.AmpFactory;
-import org.jamp.amp.SkeletonServiceInvoker;
-import org.jamp.amp.encoder.Decoder;
-import org.jamp.amp.encoder.JampMessageDecoder;
+import org.jamp.JampMessage;
+import org.jamp.Decoder;
+import org.jamp.SkeletonServiceInvoker;
 import org.jamp.example.model.EmployeeService;
-import org.jamp.amp.AmpMessage;
+import org.jamp.impl.JampFactoryImpl;
+import org.jamp.impl.JampMessageDecoder;
 
 
 public class JampFileProcessorMain {
 	
-    static SkeletonServiceInvoker serviceInvoker = AmpFactory.factory().createJampServerSkeleton(EmployeeService.class);
-    static Decoder <AmpMessage, String> messageDecoder = new JampMessageDecoder();
+    static SkeletonServiceInvoker serviceInvoker = JampFactoryImpl.factory().createJampServerSkeleton(EmployeeService.class);
+    static Decoder <JampMessage, String> messageDecoder = new JampMessageDecoder();
 
 
 
@@ -47,7 +47,7 @@ public class JampFileProcessorMain {
 				continue;
 			}
 			String payload = readPayload(file);
-			AmpMessage message = messageDecoder.decodeObject(payload);
+			JampMessage message = messageDecoder.decodeObject(payload);
 		    serviceInvoker.invokeMessage(message);
 
 		}

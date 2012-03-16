@@ -143,6 +143,7 @@ package org.jamp.websocket.impl;
  * periodically to check for updates or to contribute improvements.
  * </p>
  *
+ * I might switch to http://sourceforge.net/projects/migbase64/.
  * @author Robert Harder
  * @author rob@iharder.net
  * @version 2.3.7

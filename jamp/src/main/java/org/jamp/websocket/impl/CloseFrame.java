@@ -98,7 +98,7 @@ public class CloseFrame extends Frame {
 
     private void setCodeAndMessage(int code, String m)
             throws WebSocketException {
-        byte[] by = Charsetfunctions.utf8Bytes(m);
+        byte[] by = convertToUTF8Bytes(m);
         ByteBuffer buf = ByteBuffer.allocate(4);
         buf.putInt(code);
         buf.position(2);
@@ -132,11 +132,10 @@ public class CloseFrame extends Frame {
 
     private void initMessage() throws WebSocketException {
         if (code == CloseFrame.NOCODE) {
-            reason = Charsetfunctions.stringUtf8(getPayloadData());
+            reason = stringUtf8(getPayloadData());
         } else {
             byte[] payload = getPayloadData();
-            reason = Charsetfunctions
-                    .stringUtf8(payload, 2, payload.length - 2);
+            reason = stringUtf8(payload, 2, payload.length - 2);
         }
     }
 
