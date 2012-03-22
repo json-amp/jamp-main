@@ -1,7 +1,10 @@
 package org.jamp;
 
+import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.jamp.impl.Messages;
 
 public class JampMessageURL {
 
@@ -10,19 +13,22 @@ public class JampMessageURL {
     String serviceURI;
     String port;
     String serviceName;
-    //stomp                                      scheme 1           host 2          port 3, 4
-    static Pattern urlPattern = Pattern.compile("^([a-z][a-z+]*)://([a-zA-Z0-9_.]*)(:)?([0-9]*)/?([//a-zA-Z0-9_]*)");
+    //                                           scheme 1           host 2          port 3, 4
+    static Pattern urlPattern = Pattern.compile("^([a-z][a-z+]*)://([a-zA-Z0-9_.]*)(:)?([0-9]*)/?([//a-zA-Z0-9_]*)"); //$NON-NLS-1$
 
     
     public JampMessageURL() {
     }
     
+    @SuppressWarnings("nls")
+    @Override
     public String toString() {
-        return String.format("%s://%s%s%s/%s", scheme, host,  port==null || port.trim().equals("") ?  "" : ":", port, serviceURI);
+        return String.format("%s://%s%s%s/%s", scheme, host,  port==null || port.trim().equals("") ?  "" : ":", port, serviceURI); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 
+    @SuppressWarnings("nls")
     public String connectionString() {
-        return String.format("%s://%s%s%s", scheme, host,  port==null || port.trim().equals("") ?  "" : ":", port);
+        return String.format("%s://%s%s%s", scheme, host,  port==null || port.trim().equals("") ?  "" : ":", port); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
 
     
@@ -33,11 +39,11 @@ public class JampMessageURL {
             host = matcher.group(2);
             port = matcher.group(4);
             serviceURI = matcher.group(5);
-            String[] strings = serviceURI.split("/");
+            String[] strings = serviceURI.split("/"); //$NON-NLS-1$
             this.serviceName = strings[strings.length-1];
 
         } else {
-            throw new IllegalStateException("Not valid URL " + url);
+            throw new IllegalStateException(MessageFormat.format(Messages.getString("JampMessageURL.9"), url)); //$NON-NLS-1$
         }
         
     }

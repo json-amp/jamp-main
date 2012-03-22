@@ -42,6 +42,7 @@ public class HttpHeader {
                                                                         // first
     }
 
+    @SuppressWarnings("nls")
     public String getHeader(String name) {
         String value = headers.get(name);
         return value == null ? "" : value;

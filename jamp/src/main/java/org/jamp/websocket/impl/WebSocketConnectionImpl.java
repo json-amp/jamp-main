@@ -23,25 +23,29 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
     WebSocketInternal connection = null;
     WebSocketContextImpl context;
 
-    public void connect(String connectionURI, WebSocketListener listener)
+    @Override
+    public void connect(String connectionURI, WebSocketListener wslistener)
             throws IOException {
-        this.doConnect(connectionURI, listener);
+        this.doConnect(connectionURI, wslistener);
 
     }
 
-    public void connect(String connectionURL, SimpleWebSocketListener listener)
+    @Override
+    public void connect(String connectionURL, SimpleWebSocketListener wslistener)
             throws IOException {
-        this.doConnect(connectionURL, listener);
+        this.doConnect(connectionURL, wslistener);
 
     }
 
-    public void connect(URI uri, WebSocketListener listener) throws IOException {
-        this.doConnect(uri, listener);
+    @Override
+    public void connect(URI auri, WebSocketListener wslistener) throws IOException {
+        this.doConnect(auri, wslistener);
     }
 
-    public void connect(URI uri, SimpleWebSocketListener listener)
+    @Override
+    public void connect(URI auri, SimpleWebSocketListener wslistener)
             throws IOException {
-        this.doConnect(uri, listener);
+        this.doConnect(auri, wslistener);
     }
 
     private void doConnect(String connectionURI, BaseWebSocketListener base)
@@ -53,25 +57,29 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
         }
     }
 
-    private void doConnect(URI uri, BaseWebSocketListener base) throws IOException {
+    @SuppressWarnings("nls")
+    private void doConnect(URI auri, BaseWebSocketListener base) throws IOException {
         
         if (base == null) {
             throw new IllegalArgumentException("listener can't be null");
         }
         this.listener = base;
-        this.uri = uri;
+        this.uri = auri;
         connection = WebSocketInternalImpl.createClientWebSocket(
                 new LowLevelListenerAdapter() {
+                    @Override
                     public void onMessageBinary(
                             WebSocketInternal conn, byte[] blob) {
-                        onMessage(conn, blob);
+                        onMessage(blob);
 
                     }
 
+                    @Override
                     public void onMessageText(
                             WebSocketInternal conn, String text) {
-                        onMessage(conn, text);
+                        onMessage(text);
                     }
+                    @Override
                     public void onStart(WebSocketInternalImpl conn,
                             HttpHeader handshake) {
                        try {
@@ -80,6 +88,7 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
                             e.printStackTrace(); //Log this better TODO
                         }
                     }
+                    @Override
                     public void onWebsocketClose(WebSocketInternal conn, int code,
                             String reason, boolean remote) {
                          
@@ -98,6 +107,7 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
                      }
                     
                     
+                    @Override
                     public void errorHandler(WebSocketInternal conn, Exception ex) {
                         ex.printStackTrace();
                     }
@@ -113,7 +123,7 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
 
     }
 
-    private void onMessage(WebSocketInternal conn, String text) {
+    private void onMessage(String text) {
 
         try {
 
@@ -131,7 +141,7 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
 
     }
 
-    private void onMessage(WebSocketInternal conn, byte[] buffer) {
+    private void onMessage(byte[] buffer) {
         try {
 
             if (listener instanceof WebSocketListener) {
@@ -148,6 +158,7 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
 
     }
 
+    @Override
     public void close() {
         connection.clientClose();
     }

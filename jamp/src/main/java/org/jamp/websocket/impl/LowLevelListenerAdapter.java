@@ -16,6 +16,7 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      * @see org.jamp.websocket.impl.LowLevelListener#onMessageText(WebSocketInternalImpl,
      *      String)
      */
+    @Override
     public void onMessageText(WebSocketInternal conn, String message) {
     }
 
@@ -26,6 +27,7 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      * @see @see org.java_websocket.WebSocketListener#onWebsocketOpen(WebSocket,
      *      Handshakedata)
      */
+    @Override
     public void onStart(WebSocketInternalImpl conn,
             HttpHeader handshake) {
     }
@@ -38,6 +40,7 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      *      org.java_websocket.WebSocketListener#onWebsocketClose(WebSocket,
      *      int, String, boolean)
      */
+    @Override
     public void onWebsocketClose(WebSocketInternal conn, int code,
             String reason, boolean remote) {
     }
@@ -50,6 +53,7 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      *      org.java_websocket.WebSocketListener#onWebsocketMessage(WebSocket,
      *      byte[])
      */
+    @Override
     public void onMessageBinary(WebSocketInternal conn, byte[] blob) {
     }
 
@@ -60,6 +64,7 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      * @see @see org.java_websocket.WebSocketListener#onWebsocketPing(WebSocket,
      *      Framedata)
      */
+    @Override
     public void onPing(WebSocketInternalImpl conn, Frame f) {
         Frame resp = new Frame(f);
         resp.setOptcode(Opcode.PONG);
@@ -77,6 +82,7 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      * @see @see org.java_websocket.WebSocketListener#onWebsocketPong(WebSocket,
      *      Framedata)
      */
+    @Override
     public void onPong(WebSocketInternal conn, Frame f) {
     }
 
@@ -88,10 +94,12 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      *      org.java_websocket.WebSocketListener#onWebsocketError(WebSocket,
      *      Exception)
      */
+    @Override
     public void errorHandler(WebSocketInternal conn, Exception ex) {
         ex.printStackTrace(); //add some logging here... TODO
     }
     
+    @Override
     public void onWriteDemand(WebSocketInternal conn) {
     }
 

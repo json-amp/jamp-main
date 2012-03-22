@@ -57,7 +57,7 @@ public class Frame {
     public byte[] getPayloadData() {
         if (!head) {
             return payLoadBuffer.array();
-        } else {
+        } 
             int size = 0;
             List <byte[]> buffers = new ArrayList<byte[]>();
             if (payLoadBuffer!=null) {
@@ -78,8 +78,6 @@ public class Frame {
             }
             
             return byteBuffer.array();
-
-        }
     }
 
     public void setFinished(boolean fin) {
@@ -105,6 +103,7 @@ public class Frame {
           finished = nextFrameInSeries.finished;
     }
 
+    @SuppressWarnings("nls")
     @Override
     public String toString() {
         return "Framedata{ optcode:"
@@ -119,7 +118,7 @@ public class Frame {
 
     boolean head;
     
-    public void setSeriesHead(boolean b) {
+    public void setSeriesHead() {
         head = true;
         payloadFrameSeries = new ArrayList<Frame>();
     }
@@ -128,6 +127,7 @@ public class Frame {
         this.setPayload(convertToUTF8Bytes(text));
 
     }
+    @SuppressWarnings("nls")
     byte[] convertToUTF8Bytes( String s ) {
         try {
             return s.getBytes( "UTF8" );
@@ -141,6 +141,7 @@ public class Frame {
     }
 
     String stringUtf8( byte[] bytes, int off, int length ) throws WebSocketException {
+        @SuppressWarnings("nls")
         CharsetDecoder decode = Charset.forName( "UTF8" ).newDecoder();
         decode.onMalformedInput( CodingErrorAction.REPORT );
         decode.onUnmappableCharacter( CodingErrorAction.REPORT );

@@ -4,21 +4,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-public interface WebSocketListener extends BaseWebSocketListener{
-    
-  void onStart(WebSocketContext context)
-    throws IOException;
+public interface WebSocketListener extends BaseWebSocketListener {
 
-  void onReadBinary(WebSocketContext context, InputStream is)
-    throws IOException;
+    @Override
+    void onStart(WebSocketContext context) throws IOException;
 
-  void onReadText(WebSocketContext context, Reader is)
-    throws IOException;
+    void onReadBinary(WebSocketContext context, InputStream is)
+            throws IOException;
 
-  void onClose(WebSocketContext context)
-    throws IOException;
+    void onReadText(WebSocketContext context, Reader is) throws IOException;
 
-  void onDisconnect(WebSocketContext context)
-    throws IOException;
+    @Override
+    void onClose(WebSocketContext context) throws IOException;
+
+    @Override
+    void onDisconnect(WebSocketContext context) throws IOException;
 
 }

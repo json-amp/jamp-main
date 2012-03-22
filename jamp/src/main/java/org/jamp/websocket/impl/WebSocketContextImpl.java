@@ -20,11 +20,14 @@ public class WebSocketContextImpl implements WebSocketContext {
     WebSocketContextImpl (WebSocketInternal ws) {
         this.connection = ws;
     }
+    @Override
     public BufferedOutputStream startBinaryMessage() throws IOException {
         return new BufferedOutputStream(null) {
+            @Override
             public void   close() {
                 // No op
             }
+            @Override
             public void write(byte[] b) throws IOException {
                 try {
                     connection.send(b);
@@ -32,17 +35,20 @@ public class WebSocketContextImpl implements WebSocketContext {
                     throw new IOException(ex);
                 }
             }
-            public void write(byte[] b, int off, int len) throws IOException  {
+            @Override
+            public synchronized void write(byte[] b, int off, int len) throws IOException  {
                for (int index = off; index < len; index++) {
                    write(b[index]);
                }
             }
-            public void write(int b)  throws IOException {
+            @Override
+            public synchronized void write(int b)  throws IOException {
                 this.write(new byte[]{(byte)b});
             }
         };
     }
 
+    @Override
     public PrintWriter startTextMessage() throws IOException {
         return new PrintWriter(new Writer(){
 
@@ -57,6 +63,7 @@ public class WebSocketContextImpl implements WebSocketContext {
                 
             }
             
+            @Override
             public void write(String text) throws IOException {
                 try {
                     connection.send(text);
@@ -80,6 +87,7 @@ public class WebSocketContextImpl implements WebSocketContext {
         });
     }
 
+    @Override
     public void sendText(String text) throws IOException {
         try {
             connection.send(text);
@@ -88,6 +96,7 @@ public class WebSocketContextImpl implements WebSocketContext {
         }        
     }
 
+    @Override
     public void sendBinary(byte[] buffer) throws IOException {
         try {
             connection.send(buffer);
@@ -97,6 +106,7 @@ public class WebSocketContextImpl implements WebSocketContext {
     }
 
 
+    @Override
     public void close() {
         connection.clientClose();
     }

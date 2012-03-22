@@ -84,6 +84,7 @@ public class CloseFrame extends Frame {
         setFinished(true);
     }
 
+    @SuppressWarnings("nls")
     public CloseFrame(int code) throws WebSocketException {
         super(Opcode.CLOSING);
         setFinished(true);
@@ -108,6 +109,7 @@ public class CloseFrame extends Frame {
         setPayload(pay.array());
     }
 
+    @SuppressWarnings("nls")
     private void initCloseCode() throws WebSocketException  {
         code = CloseFrame.NOCODE;
         byte[] payload = getPayloadData();
@@ -143,6 +145,7 @@ public class CloseFrame extends Frame {
         return reason;
     }
 
+    @SuppressWarnings("nls")
     @Override
     public String toString() {
         return super.toString() + "code: " + code;

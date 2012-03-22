@@ -7,17 +7,18 @@ import org.jamp.JampProxyCreator;
 import org.jamp.example.model.AddressBook;
 import org.jamp.example.model.Employee;
 import org.jamp.example.model.EmployeeService;
-import org.jamp.impl.HttpMessageSender;
+import org.jamp.impl.JampProxyCreatorImpl;
 
 
 public class JampURLSenderMain {
 	
 
-	public static void main (String [] args) throws Exception {
+	@SuppressWarnings("nls")
+    public static void main (String [] args) throws Exception {
 		
-		JampProxyCreator ampProxy = new JampProxyCreator(new HttpMessageSender() );
+		JampProxyCreator ampProxy = new JampProxyCreatorImpl( org.jamp.Factory.factory().createRESTSender() );
 		
-		EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class, "http://localhost:8080/jamp_servlet/JampServlet", "from");
+		EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class);
 
         List<AddressBook> books = new ArrayList<AddressBook>();
         books.add(new AddressBook("a"));

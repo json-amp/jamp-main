@@ -16,17 +16,22 @@ public class WebSocketException extends RuntimeException {
 		this.closecode = closecode;
 	}
 
-	public WebSocketException( int closecode , Throwable t ) {
+	public WebSocketException( int aclosecode , Throwable t ) {
 		super( t );
 		if( t instanceof WebSocketException ) {
 			closecode = ( (WebSocketException) t ).getCloseCode();
+		} else {
+		    closecode = aclosecode;
 		}
+		
 	}
 
-	public WebSocketException( int closecode , String s , Throwable t ) {
+	public WebSocketException( int aclosecode , String s , Throwable t ) {
 		super( s, t );
 		if( t instanceof WebSocketException ) {
 			closecode = ( (WebSocketException) t ).getCloseCode();
+		} else {
+		    closecode = aclosecode;
 		}
 	}
 

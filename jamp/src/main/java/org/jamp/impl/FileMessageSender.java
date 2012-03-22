@@ -12,7 +12,8 @@ public class FileMessageSender implements JampMessageSender {
 	File dir;
 	int counter;
 	
-	public FileMessageSender (final String aDir) {
+	@SuppressWarnings("nls")
+    public FileMessageSender (final String aDir) {
 		dir = new File(aDir);
 		if (!dir.isDirectory()) {
 			if (!dir.mkdirs()){
@@ -25,7 +26,9 @@ public class FileMessageSender implements JampMessageSender {
 		}
 	}
 	
-	public JampMessage sendMessage(JampMessage message) throws Exception  {
+	@SuppressWarnings("nls")
+    @Override
+    public JampMessage sendMessage(JampMessage message) throws Exception  {
 		counter++;
 		File outputFile = new File(dir, message.getToURL().getServiceName() + "." + message.getAction()  + "_" + System.currentTimeMillis() + "_" + counter + ".jamp");
 		

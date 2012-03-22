@@ -8,6 +8,7 @@ public class AddressBook {
         
     }
     
+    @SuppressWarnings("nls")
     @Override
     public String toString() {
         return "AddressBook [foo=" + foo + "]";

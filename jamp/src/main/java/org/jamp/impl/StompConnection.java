@@ -1,7 +1,6 @@
 package org.jamp.impl;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -23,7 +22,7 @@ import org.jamp.JampMessageURL;
  * This only works with Strings for now, because that is all we need for this
  * iteration. Needs logging badly.
  */
-public class StompConnection implements Closeable, MessageQueueConnection {
+public class StompConnection implements MessageQueueConnection {
 
     enum Version {
         ONE, ONE_ONE
@@ -56,16 +55,17 @@ public class StompConnection implements Closeable, MessageQueueConnection {
 
     }
 
+    @Override
     public void connect(String connectionString, String login, String passcode, Object... config) throws IOException {
 
         if (connected) {
-            throw new IOException("Already connected.");
+            throw new IOException(Messages.getString("StompConnection.0")); //$NON-NLS-1$
         }
 
         JampMessageURL messageURL = new JampMessageURL(connectionString);        
         
-        if (!messageURL.getScheme().equals("stomp")) {
-            throw new  IllegalStateException("Scheme must be stomp");
+        if (!messageURL.getScheme().equals("stomp")) { //$NON-NLS-1$
+            throw new  IllegalStateException(Messages.getString("StompConnection.1")); //$NON-NLS-1$
         }
         
         this.host = messageURL.getHost();
@@ -80,31 +80,31 @@ public class StompConnection implements Closeable, MessageQueueConnection {
                 socket.getInputStream()));
 
         /* Send the connect command to authenticate. */
-        sendCommand("CONNECT", String.format("host:%s", host), "accept-version:1.1,1.0",
-                String.format("login:%s", login), String.format("passcode:%s",passcode));
+        sendCommand("CONNECT", String.format(Messages.getString("StompConnection.2"), host), Messages.getString("StompConnection.3"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                String.format("login:%s", login), String.format(Messages.getString("StompConnection.4"),passcode)); //$NON-NLS-1$ //$NON-NLS-2$
         
         /* Look for CONNECTED string. */
         String line = reader.readLine();
 
-        if (!line.equals("CONNECTED")) {
-            throw new IOException("Expecting CONNECTED handshake");
+        if (!line.equals("CONNECTED")) { //$NON-NLS-1$
+            throw new IOException(Messages.getString("StompConnection.5")); //$NON-NLS-1$
         }
 
         /* Read the headers and see if we are compatible with the server's version. */
         Properties headers = readHeaders();
-        String sversion = headers.getProperty("version");
+        String sversion = headers.getProperty("version"); //$NON-NLS-1$
 
-        if (sversion.equals("1.1")) {
+        if (sversion.equals("1.1")) { //$NON-NLS-1$
             version = Version.ONE_ONE;
-        } else if (version.equals("1")) {
+        } else if (version.equals("1")) { //$NON-NLS-1$
             version = Version.ONE;
         } else {
-            throw new IOException("Unsupported Stomp version number = "
+            throw new IOException(Messages.getString("StompConnection.6") //$NON-NLS-1$
                     + sversion);
         }
 
         if (debug)
-            System.out.printf("Version is %s \n", sversion);
+            System.out.printf(Messages.getString("StompConnection.7"), sversion); //$NON-NLS-1$
 
         /* Clear out and validate the rest of the message. */
         readResult();
@@ -126,6 +126,7 @@ public class StompConnection implements Closeable, MessageQueueConnection {
 
         threadPool.execute(new Runnable() {
 
+            @Override
             public void run() {
                 dispatchLoop();
             }
@@ -134,6 +135,7 @@ public class StompConnection implements Closeable, MessageQueueConnection {
     }
 
     /** The actual dispatch look that handles command frames from the server. */
+    @SuppressWarnings("nls")
     private void dispatchLoop() {
         try {
 
@@ -141,43 +143,39 @@ public class StompConnection implements Closeable, MessageQueueConnection {
             while (connected && socket!=null && socket.isConnected() && (line = reader.readLine()) != null) {
                     
                     /* Ignore heart beat */
-                    if ("".equals(line.trim())) {
+                    if (Messages.getString("StompConnection.8").equals(line.trim())) { //$NON-NLS-1$
                         continue;
                     }
                     
-                    if ("MESSAGE".equals(line) ) {
+                    if (Messages.getString("StompConnection.9").equals(line) ) { //$NON-NLS-1$
                         handleMessage();
-                    } else if ("RECEIPT".equals(line)) {
+                    } else if (Messages.getString("StompConnection.10").equals(line)) { //$NON-NLS-1$
                         handleReceipt();
-                    } else if ("ERROR".equals(line) ) {
+                    } else if (Messages.getString("StompConnection.11").equals(line) ) { //$NON-NLS-1$
                         handleError();
                     } else {
                         if (debug)
-                            System.out.println("Unknown command " + line);
+                            System.out.println(Messages.getString("StompConnection.12") + line); //$NON-NLS-1$
                     }
                 
             }
 
         } catch (SocketException se) {
-            if (se.getMessage().contains("Socket closed")) {
+            if (se.getMessage().contains(Messages.getString("StompConnection.13"))) { //$NON-NLS-1$
                 return; // this is ok... it just means that the server
                         // disconnected.
-            } else {
-                se.printStackTrace();
             }
+            se.printStackTrace();
+            
         } catch (IOException ioe) {
-            // don't care
             ioe.printStackTrace();
         } finally {
-
             try {
                 if (socket!=null)
                 socket.close();
             } catch (IOException e) {
             }
-
         }
-
     }
 
     private void handleError() throws IOException {
@@ -185,18 +183,18 @@ public class StompConnection implements Closeable, MessageQueueConnection {
 
         StringBuilder readBody = readBody(0);
         
-        System.err.printf("ERROR from server:: %s", readBody);
+        System.err.printf(Messages.getString("StompConnection.14"), readBody); //$NON-NLS-1$
 
     }
 
     private void handleReceipt() throws IOException {
         Properties headers = this.readHeaders();
-        String receipt = headers.getProperty("receipt-id");
+        String receipt = headers.getProperty(Messages.getString("StompConnection.15")); //$NON-NLS-1$
         
-        if (debug) System.out.printf("GOT RECEIPT %s\n", receipt);
+        if (debug) System.out.printf(Messages.getString("StompConnection.16"), receipt); //$NON-NLS-1$
         
-        if (receipt != null && receipt.startsWith("close-")) {
-            String[] split = receipt.split("-");
+        if (receipt != null && receipt.startsWith(Messages.getString("StompConnection.17"))) { //$NON-NLS-1$
+            String[] split = receipt.split(Messages.getString("StompConnection.18")); //$NON-NLS-1$
             closeQueue.offer(split[1]);
         }
         
@@ -205,16 +203,18 @@ public class StompConnection implements Closeable, MessageQueueConnection {
 
     }
 
+
+    @SuppressWarnings("nls")
     private void handleMessage() throws IOException {
         Properties headers = this.readHeaders();
         
-        String subscription = headers.getProperty("subscription");
-        String messageId = headers.getProperty("message-id");
-        String destination = headers.getProperty("destination");
+        String subscription = headers.getProperty(Messages.getString("StompConnection.19")); //$NON-NLS-1$
+        String messageId = headers.getProperty(Messages.getString("StompConnection.20")); //$NON-NLS-1$
+        String destination = headers.getProperty(Messages.getString("StompConnection.21")); //$NON-NLS-1$
         int length = 0;
 
         if (subscription == null) {
-            System.err.println("subscription missing from message");
+            System.err.println(Messages.getString("StompConnection.22")); //$NON-NLS-1$
         }
         
         if (messageId == null) {
@@ -227,13 +227,13 @@ public class StompConnection implements Closeable, MessageQueueConnection {
    
         
      
-        String slength = headers.getProperty("content-length");
+        String slength = headers.getProperty(Messages.getString("StompConnection.23")); //$NON-NLS-1$
 
         if (slength!=null) {
             length = Integer.parseInt(slength);
         }
         
-        if (debug) System.out.printf("handleMessage %s %s %s %s \n", subscription, messageId, destination, length);
+        if (debug) System.out.printf(Messages.getString("StompConnection.24"), subscription, messageId, destination, length); //$NON-NLS-1$
 
         final StringBuilder body = readBody(length);
         
@@ -263,21 +263,21 @@ public class StompConnection implements Closeable, MessageQueueConnection {
                 body.append(ch);
             }
             return body;
-        } else {
+        } 
             final StringBuilder body = new StringBuilder();
             char[] buffer = new char[length];
             int actual = reader.read(buffer, 0, length);
             body.append(buffer);
             if (actual != length) {
-                throw new IOException(String.format("unable to read content-length:%d from stream", length));
+                throw new IOException(String.format(Messages.getString("StompConnection.25"), length)); //$NON-NLS-1$
                 
             }
             int ch = reader.read();
             if (ch!=0) {
-                throw new IOException(String.format("unable to read content-length:%d from stream", length));
+                throw new IOException(String.format(Messages.getString("StompConnection.26"), length)); //$NON-NLS-1$
             }
             return body;
-        }
+       
     }
 
 
@@ -291,57 +291,60 @@ public class StompConnection implements Closeable, MessageQueueConnection {
         return result;
     }
 
-    void sendCommand(String command, String... headers) throws IOException {
+    void sendCommand(String command, String... headers)  {
 
         this.sendCommandWithBody(command, null, headers);
 
     }
 
-    void sendCommandWithBody(String command, String body, String... headers)
-            throws IOException {
+    @SuppressWarnings("nls")
+    void sendCommandWithBody(String command, String body, String... headers) {
 
-        out.printf("%s\n", command);
+        out.printf(Messages.getString("StompConnection.27"), command); //$NON-NLS-1$
         for (String header : headers) {
-            out.printf("%s\n", header);
+            out.printf(Messages.getString("StompConnection.28"), header); //$NON-NLS-1$
         }
         out.println();
         if (body != null) {
             out.print(body);
         }
-        out.printf("\u0000\n");
+        out.printf(Messages.getString("StompConnection.29")); //$NON-NLS-1$
 
     }
 
+    @SuppressWarnings("nls")
     private Properties readHeaders() throws IOException {
         Properties props = new Properties();
         String line;
         while ((line = reader.readLine()) != null) {
-            if ("".equals(line)) {
+            if (Messages.getString("StompConnection.30").equals(line)) { //$NON-NLS-1$
                 break;
-            } else {
-                String[] split = line.split(":");
+            }
+                String[] split = line.split(Messages.getString("StompConnection.31")); //$NON-NLS-1$
                 if (split.length==2)
                 props.put(split[0], split[1]);
-            }
+            
         }
 
         if (debug)
-            System.out.println("HEADERS = " + props);
+            System.out.println(Messages.getString("StompConnection.32") + props); //$NON-NLS-1$
 
         return props;
 
     }
 
+    @Override
+    @SuppressWarnings("nls")
     public void send(String destination, Object oMessage) throws IOException {
         if (!connected)
-            throw new IOException("Not connected");
+            throw new IOException(Messages.getString("StompConnection.33")); //$NON-NLS-1$
         
         if (oMessage instanceof String) {
             String message = (String) oMessage; 
-            this.sendCommandWithBody("SEND", message, 
-                    String.format("destination:%s", destination), 
-                    "content-type:text/plain", 
-                    String.format("content-length:%d", 
+            this.sendCommandWithBody(Messages.getString("StompConnection.34"), message,  //$NON-NLS-1$
+                    String.format(Messages.getString("StompConnection.35"), destination),  //$NON-NLS-1$
+                    Messages.getString("StompConnection.36"),  //$NON-NLS-1$
+                    String.format(Messages.getString("StompConnection.37"),  //$NON-NLS-1$
                             message.length()));        
         } else {
             //we don't handle byte arrays yet.
@@ -351,10 +354,12 @@ public class StompConnection implements Closeable, MessageQueueConnection {
 
     }
 
+    @SuppressWarnings("nls")
+    @Override
     public void subscribe(String destination, MQMessageListener messageListener)
             throws IOException {
         if (!connected)
-            throw new IOException("Not connected");
+            throw new IOException(Messages.getString("StompConnection.38")); //$NON-NLS-1$
         
         int id = 0;
         synchronized(this) {
@@ -364,14 +369,16 @@ public class StompConnection implements Closeable, MessageQueueConnection {
             this.subscriptionsIds.put(messageListener, id);
         }
 
-        this.sendCommand("SUBSCRIBE", String.format("id:%s", id),  String.format("destination:%s", destination));
+        this.sendCommand(Messages.getString("StompConnection.39"), String.format(Messages.getString("StompConnection.40"), id),  String.format(Messages.getString("StompConnection.41"), destination)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
     }
 
+    @SuppressWarnings("nls")
+    @Override
     public void unsubscribe(String destination, MQMessageListener messageListener)
             throws IOException {
         if (!connected)
-            throw new IOException("Not connected");
+            throw new IOException(Messages.getString("StompConnection.42")); //$NON-NLS-1$
 
         int id = 0;
         synchronized(this) {
@@ -379,9 +386,11 @@ public class StompConnection implements Closeable, MessageQueueConnection {
             id = this.subscriptionsIds.get(messageListener);
             subscriptionsIds.remove(id);
         }
-        this.sendCommand("UNSUBSCRIBE", String.format("id:%s", id));
+        this.sendCommand(Messages.getString("StompConnection.43"), String.format(Messages.getString("StompConnection.44"), id)); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    @SuppressWarnings("nls")
+    @Override
     public void close() throws IOException {
         
         
@@ -389,19 +398,19 @@ public class StompConnection implements Closeable, MessageQueueConnection {
         synchronized (this) {//not really needed
             latest = this.receiptNumber++;
         }
-        String receipt = "close-" + latest;
+        String receipt = Messages.getString("StompConnection.45") + latest; //$NON-NLS-1$
         
-        this.sendCommand("DISCONNECT", String.format("receipt:%s", receipt));
+        this.sendCommand(Messages.getString("StompConnection.46"), String.format(Messages.getString("StompConnection.47"), receipt)); //$NON-NLS-1$ //$NON-NLS-2$
         
         try {
             String receiptFromServer = closeQueue.poll(10, TimeUnit.SECONDS);
-            if (("" + latest).equals(receiptFromServer)) {
-                if (debug)System.out.println("Shutting down properly");
+            if ((Messages.getString("StompConnection.48") + latest).equals(receiptFromServer)) { //$NON-NLS-1$
+                if (debug)System.out.println(Messages.getString("StompConnection.49")); //$NON-NLS-1$
                 this.socket.close();
                 this.socket = null;
             } 
         } catch (InterruptedException e) {            
-            throw new IOException("Unable to shutdown properly from server");
+            throw new IOException(Messages.getString("StompConnection.50")); //$NON-NLS-1$
         } finally {
             this.connected = false;
             

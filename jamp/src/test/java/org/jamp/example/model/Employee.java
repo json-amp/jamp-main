@@ -73,6 +73,7 @@ public class Employee {
 	}
 
 
+    @SuppressWarnings("nls")
     @Override
     public String toString() {
         return "Employee [name=" + name + ", phoneNumber=" + phoneNumber

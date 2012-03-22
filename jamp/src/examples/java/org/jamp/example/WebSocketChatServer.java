@@ -15,9 +15,10 @@ import org.jamp.websocket.impl.WebSocketException;
 /**
  * A simple WebSocketServer implementation. Keeps track of a "chatroom".
  */
+@SuppressWarnings("nls")
 public class WebSocketChatServer extends WebSocketServer {
 
-	public WebSocketChatServer( int port ) throws UnknownHostException {
+    public WebSocketChatServer( int port ) throws UnknownHostException {
 		super( new InetSocketAddress( InetAddress.getByName( "localhost" ), port ) );
 	}
 	

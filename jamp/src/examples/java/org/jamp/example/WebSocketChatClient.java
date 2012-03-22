@@ -17,18 +17,19 @@ import org.jamp.websocket.WebSocketConnection;
 import org.jamp.websocket.WebSocketConnectionFactory;
 import org.jamp.websocket.WebSocketContext;
 
+@SuppressWarnings("nls")
 public class WebSocketChatClient extends JFrame implements ActionListener {
 	private static final long serialVersionUID = -6056260699202978657L;
 
-	private final JTextField uriField;
-	private final JButton connect;
-	private final JButton close;
-	private final JTextArea ta;
-	private final JTextField chatField;
-	private  WebSocketConnection conneciton;
-    private  WebSocketContext context;
+	 final JTextField uriField;
+	 final JButton connect;
+	 final JButton close;
+	 final JTextArea ta;
+	 final JTextField chatField;
+	  WebSocketConnection conneciton;
+      WebSocketContext context;
 
-	public WebSocketChatClient( String defaultlocation ) {
+    public WebSocketChatClient( String defaultlocation ) {
 		super( "WebSocket Chat Client" );
 		Container c = getContentPane();
 		GridLayout layout = new GridLayout();
@@ -78,7 +79,8 @@ public class WebSocketChatClient extends JFrame implements ActionListener {
 		setVisible( true );
 	}
 
-	public void actionPerformed( ActionEvent e ) {
+	@Override
+    public void actionPerformed( ActionEvent e ) {
 
 		if( e.getSource() == chatField ) {
 			if( context != null ) {
@@ -97,21 +99,24 @@ public class WebSocketChatClient extends JFrame implements ActionListener {
 			    try {
                     conneciton.connect("ws://localhost:8887/", new SimpleWebSocketListener() {
                         
-                        public void onTextMessage(WebSocketContext context, String text)
+                        @Override
+                        public void onTextMessage(WebSocketContext acontext, String text)
                                 throws IOException {
                             ta.append( "got: " + text + "\n" );
                             ta.setCaretPosition( ta.getDocument().getLength() );
                             
                         }
                         
-                        public void onStart(WebSocketContext context) throws IOException {
+                        @Override
+                        public void onStart(WebSocketContext acontext) throws IOException {
                               ta.append( "You are connected to ChatServer: \n" );
                               ta.setCaretPosition( ta.getDocument().getLength() );
                               WebSocketChatClient.this.context = context;
 
                         }
                         
-                        public void onDisconnect(WebSocketContext context) throws IOException {
+                        @Override
+                        public void onDisconnect(WebSocketContext acontext) throws IOException {
                             
                             if (closed) {
                                 ta.append( "You have been disconnected from ChatServer closed properly." );
@@ -128,12 +133,14 @@ public class WebSocketChatClient extends JFrame implements ActionListener {
                         
                         
                         boolean closed;
-                        public void onClose(WebSocketContext context) throws IOException {
+                        @Override
+                        public void onClose(WebSocketContext acontext) throws IOException {
                             System.out.println("onClose ");
                                        this.closed = true;    
                         }
                         
-                        public void onBinaryMessage(WebSocketContext context, byte[] buffer)
+                        @Override
+                        public void onBinaryMessage(WebSocketContext acontext, byte[] buffer)
                                 throws IOException {
                             System.out.println("onBinaryMessage ");
                                            
@@ -158,7 +165,8 @@ public class WebSocketChatClient extends JFrame implements ActionListener {
 		}
 	}
 
-	public static void main( String[] args ) {
+	@SuppressWarnings("unused")
+    public static void main( String[] args ) {
 		String location;
 		if( args.length != 0 ) {
 			location = args[ 0 ];

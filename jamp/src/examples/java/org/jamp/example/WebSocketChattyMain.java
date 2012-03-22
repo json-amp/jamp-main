@@ -10,11 +10,13 @@ import org.jamp.websocket.WebSocketContext;
 
 public class WebSocketChattyMain {
 
+    @SuppressWarnings("nls")
     public static void main (String args[]) throws Exception {
         WebSocketConnection connection = WebSocketConnectionFactory.create();
         
         connection.connect("ws://localhost:8887/", new SimpleWebSocketListener() {
             
+            @Override
             public void onTextMessage(WebSocketContext context, String text)
                     throws IOException {
                 
@@ -22,6 +24,7 @@ public class WebSocketChattyMain {
                 
             }
             
+            @Override
             public void onStart(WebSocketContext context) throws IOException {
                 System.out.println("onStart ");
                 PrintWriter printWriter = context.startTextMessage();
@@ -29,15 +32,18 @@ public class WebSocketChattyMain {
                 context.sendText("Good... thanks for asking!!!!!!!!!!!!!!!!!!!");
             }
             
+            @Override
             public void onDisconnect(WebSocketContext context) throws IOException {
                 System.out.println("onDisconnect ");
            }
             
+            @Override
             public void onClose(WebSocketContext context) throws IOException {
                 System.out.println("onClose ");
                                
             }
             
+            @Override
             public void onBinaryMessage(WebSocketContext context, byte[] buffer)
                     throws IOException {
                 System.out.println("onBinaryMessage ");

@@ -3,19 +3,17 @@ package org.jamp.example;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-
 import org.jamp.JampMessage;
 import org.jamp.Decoder;
 import org.jamp.SkeletonServiceInvoker;
 import org.jamp.example.model.EmployeeService;
-import org.jamp.impl.JampFactoryImpl;
-import org.jamp.impl.JampMessageDecoder;
+import org.jamp.impl.JampMessageDecoderImpl;
 
 
 public class JampFileProcessorMain {
 	
-    static SkeletonServiceInvoker serviceInvoker = JampFactoryImpl.factory().createJampServerSkeleton(EmployeeService.class);
-    static Decoder <JampMessage, CharSequence> messageDecoder = new JampMessageDecoder();
+    static SkeletonServiceInvoker serviceInvoker = org.jamp.Factory.factory().createJampServerSkeleton(EmployeeService.class);
+    static Decoder <JampMessage, CharSequence> messageDecoder = new JampMessageDecoderImpl();
 
 
 
@@ -36,7 +34,8 @@ public class JampFileProcessorMain {
 		
 		return builder.toString();
 	}
-	public static void main (String [] args) throws Exception {
+	@SuppressWarnings("nls")
+    public static void main (String [] args) throws Exception {
 		
 		File dir = new File("/Users/rick/test/file_invoker");
 		

@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
  * This implementation assumes all messages are content-type/plain-text.
  * Again it is only for quick integration testing, I defer to the Apollo, ActiveMQ, and HornetQ of the world for real STOMP.
  */
+@SuppressWarnings("nls")
 public class StompServer {
 
     int poolSize = 2;
@@ -100,7 +101,7 @@ public class StompServer {
         StompConnection connection;
         String destination;
 
-        public void handleMessage(String message) throws IOException {
+        public void handleMessage(String message)  {
             connection.sendMessage(message, id);
         }
 
@@ -127,10 +128,11 @@ public class StompServer {
 
         }
 
-        public void sendMessage(String message, String id) throws IOException {
+        public void sendMessage(String message, String id)  {
             this.sendCommandWithBody("MESSAGE", message, String.format("subscription:%s",id));
         }
 
+        @Override
         public void run() {
 
             try {
@@ -167,9 +169,9 @@ public class StompServer {
             } catch (SocketException se) {
                 if (se.getMessage().contains("Connection reset")) {
                     return; //this is ok... it just means that the client disconnected.
-                } else {
+                } 
                     se.printStackTrace();
-                }
+                
             } catch (IOException ioe) {
                 // don't care
                 ioe.printStackTrace();
@@ -262,14 +264,14 @@ public class StompServer {
 
                 if (ch == '\n') {
                     return true;
-                } else {
+                } 
                     error("protocol error, newline missing");
                     return false;
-                }
-            } else {
+               
+            } 
                 error("protocol error, null missing to terminate message");
                 return false;
-            }
+            
         }
 
         private void handleSend() throws IOException {
@@ -316,8 +318,8 @@ public class StompServer {
                     body.append(ch);
                 }
                 return body;
-            } else {
-                final StringBuilder body = new StringBuilder();
+            }                 
+            final StringBuilder body = new StringBuilder();
                 char[] buffer = new char[length];
                 int actual = reader.read(buffer, 0, length);
                 body.append(buffer);
@@ -331,7 +333,7 @@ public class StompServer {
                     return null;
                 }
                 return body;
-            }
+           
         }
 
         private void handleConnect() throws IOException {
@@ -340,14 +342,14 @@ public class StompServer {
                 System.out.println("CONNECT");
             Properties props = readHeaders();
 
-            BigDecimal version = getHighestVersion(props);
-            if (version.longValue() == -1) {
+            BigDecimal connectVersion = getHighestVersion(props);
+            if (connectVersion.longValue() == -1) {
                 error("Supported Protocols are 1.0 1.1", "version:1.0,1.1");
                 return;
             }
 
             if (debug)
-                System.out.printf("version agreed on %s\n", version);
+                System.out.printf("version agreed on %s\n", connectVersion);
 
             if (userName.equals(props.getProperty("login"))) {
                 if (debug)
@@ -356,11 +358,11 @@ public class StompServer {
                 if (!password.equals(props.getProperty("passcode"))) {
                     error("Authentication failed");
                     return;
-                } else {
+                } 
                     if (debug)
                         System.out.printf("passcode matches%s\n", password);
 
-                }
+                
 
             } else {
                 error("Unkown login");
@@ -377,8 +379,7 @@ public class StompServer {
 
         }
 
-        private void error(String message, String... headers)
-                throws IOException {
+        private void error(String message, String... headers) {
 
             List<String> list = new ArrayList<String>();
             for (String header : headers) {
@@ -421,10 +422,10 @@ public class StompServer {
             while ((line = reader.readLine()) != null) {
                 if ("".equals(line)) {
                     break;
-                } else {
+                }
                     String[] split = line.split(":");
                     props.put(split[0], split[1]);
-                }
+                
             }
 
             if (debug)
@@ -434,13 +435,12 @@ public class StompServer {
 
         }
 
-        void sendCommand(String command, String... headers) throws IOException {
+        void sendCommand(String command, String... headers)  {
             this.sendCommandWithBody(command, null, headers);
 
         }
 
-        void sendCommandWithBody(String command, String body, String... headers)
-                throws IOException {
+        void sendCommandWithBody(String command, String body, String... headers) {
             out.printf("%s\n", command);
             for (String header : headers) {
                 out.printf("%s\n", header);
@@ -458,6 +458,7 @@ public class StompServer {
     private void sendAll(final String destination) {
         threadPool.execute(new Runnable() {
 
+            @Override
             public void run() {
 
                 synchronized (listeners) {
@@ -485,7 +486,7 @@ public class StompServer {
                             if (body != null) {
                                 try {
                                     listener.handleMessage(body);
-                                } catch (IOException e) {
+                                } catch (Exception e) {
 
                                     System.err
                                             .println("UNABLE TO SEND MESSAGE "

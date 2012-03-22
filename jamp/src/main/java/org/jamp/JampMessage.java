@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-
-/** Represents an AMP message. */
 public class JampMessage {
     
 
@@ -43,6 +41,7 @@ public class JampMessage {
    
     }
 
+    @SuppressWarnings("nls")
     @Override
 	public String toString() {
 		return "Message |||messageType=" + messageType + ", to=" + to + ", from="

@@ -9,15 +9,17 @@ import org.jamp.example.model.AddressBook;
 import org.jamp.example.model.Employee;
 import org.jamp.example.model.EmployeeService;
 import org.jamp.impl.FileMessageSender;
+import org.jamp.impl.JampProxyCreatorImpl;
 
 
 public class JampFileSenderMain {
 	
 
-	public static void main (String [] args) throws Exception {
+	@SuppressWarnings("nls")
+    public static void main (String [] args) throws Exception {
 		
-		JampProxyCreator ampProxy = new JampProxyCreator(new FileMessageSender("/Users/rick/test/file_invoker") );
-        EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class, "to", "from");
+		JampProxyCreator ampProxy = new JampProxyCreatorImpl(new FileMessageSender("/Users/rick/test/file_invoker") );
+        EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class);
 		
         List<AddressBook> books = new ArrayList<AddressBook>();
         books.add(new AddressBook("a"));

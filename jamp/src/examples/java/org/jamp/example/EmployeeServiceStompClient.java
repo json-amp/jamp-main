@@ -2,25 +2,25 @@ package org.jamp.example;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.jamp.JampMessageSender;
 import org.jamp.JampProxyCreator;
+import org.jamp.MQMessageSender;
 import org.jamp.example.model.AddressBook;
 import org.jamp.example.model.Employee;
 import org.jamp.example.model.EmployeeService;
-import org.jamp.impl.JampFactoryImpl;
+import org.jamp.impl.JampProxyCreatorImpl;
 
-
+@SuppressWarnings("nls")
 public class EmployeeServiceStompClient {
     
     public static void main (String [] args) throws Exception {
         
-        JampMessageSender sender = JampFactoryImpl.factory().createMQMessageSender("stomp://localhost:6666/foo", 
+        
+        MQMessageSender sender = org.jamp.Factory.factory().createMQMessageSender("stomp://localhost:6666/foo", 
                 "rick", "rick", "queue/empService");
         
-        JampProxyCreator ampProxy = new JampProxyCreator( sender );
+        JampProxyCreator proxy = new JampProxyCreatorImpl( sender );
         
-        EmployeeService service = (EmployeeService) ampProxy.createProxy(EmployeeService.class, "stomp://localhost:6666/foo", "stomp://localhost:6666/foo");
+        EmployeeService service = (EmployeeService) proxy.createProxy(EmployeeService.class);
         
         List<AddressBook> books = new ArrayList<AddressBook>();
         books.add(new AddressBook("a"));

@@ -1,13 +1,13 @@
 package org.jamp.impl;
 
-import java.io.Reader;
-
 import org.jamp.Decoder;
 
 
 public class JSONStringDecoder implements Decoder<String, String> {
 
-	public String decode(String string) throws Exception {
+	@SuppressWarnings("nls")
+    @Override
+    public String decode(String string) throws Exception {
 		
 		char[] cs = string.toCharArray();
 		StringBuilder builder = new StringBuilder(cs.length);
