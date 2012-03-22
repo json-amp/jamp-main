@@ -1,6 +1,7 @@
 package org.jamp.impl;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +18,7 @@ import org.jamp.JampMessageURL;
 public class MQMessageSender implements JampMessageSender {
 
     MessageQueueConnection connection;
-    Decoder<JampMessage, String>  messageDecoder = new JampMessageDecoder();
+    Decoder<JampMessage, CharSequence>  messageDecoder = new JampMessageDecoder();
 
 
     
@@ -49,7 +50,7 @@ public class MQMessageSender implements JampMessageSender {
         connection.subscribe(message.getToURL().getServiceURI() + "_return", new MQMessageListener() {
             
             public void onTextMessage(String text) throws Exception {
-                JampMessage replyMessage = messageDecoder.decodeObject(text);
+                JampMessage replyMessage = messageDecoder.decode(text);
                 if (message.getQueryId().equals(replyMessage.getQueryId())) {
                     queue.offer(replyMessage, 1, TimeUnit.SECONDS);                    
                 } else {

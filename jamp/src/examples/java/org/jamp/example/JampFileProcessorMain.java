@@ -15,7 +15,7 @@ import org.jamp.impl.JampMessageDecoder;
 public class JampFileProcessorMain {
 	
     static SkeletonServiceInvoker serviceInvoker = JampFactoryImpl.factory().createJampServerSkeleton(EmployeeService.class);
-    static Decoder <JampMessage, String> messageDecoder = new JampMessageDecoder();
+    static Decoder <JampMessage, CharSequence> messageDecoder = new JampMessageDecoder();
 
 
 
@@ -47,7 +47,7 @@ public class JampFileProcessorMain {
 				continue;
 			}
 			String payload = readPayload(file);
-			JampMessage message = messageDecoder.decodeObject(payload);
+			JampMessage message = messageDecoder.decode(payload);
 		    serviceInvoker.invokeMessage(message);
 
 		}

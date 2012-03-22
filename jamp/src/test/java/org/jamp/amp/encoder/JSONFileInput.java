@@ -3,6 +3,7 @@ package org.jamp.amp.encoder;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.nio.CharBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,7 +21,7 @@ public class JSONFileInput {
 	public void fileInputTest() throws Exception {
 		File projectDir = new File(".");
 		projectDir = projectDir.getCanonicalFile();
-		File testDir = new File(projectDir, "src/test/resources/text");
+		File testDir = new File(projectDir, "jamp/src/test/resources/text");
 
 		System.out.println(testDir);
 
@@ -36,7 +37,9 @@ public class JSONFileInput {
 					reader = new BufferedReader(new FileReader(file));
 
 					Decoder decoder = new JSONDecoder();
-					Object object = decoder.decodeObject(reader);
+					
+					CharBuffer buffer = CharBuffer.allocate(4096);
+					Object object = decoder.decode(buffer);
 					verifyObject(object);
 					System.out.printf("verified %s \n\n", file.getName());
 				} finally {

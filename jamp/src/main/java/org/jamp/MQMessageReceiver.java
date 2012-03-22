@@ -1,6 +1,7 @@
 package org.jamp;
 
 import java.io.IOException;
+import java.io.Reader;
 
 import org.jamp.impl.JampFactoryImpl;
 import org.jamp.impl.JampMessageDecoder;
@@ -14,7 +15,7 @@ public class MQMessageReceiver {
     MessageQueueConnection connection;
     String destination;
     SkeletonServiceInvoker invoker;
-    Decoder<JampMessage, String>  messageDecoder = null; 
+    Decoder<JampMessage, CharSequence>  messageDecoder = null; 
     
     
     public MQMessageReceiver(String connectionString, String login, String passcode, String destination, Class<?> serviceClass, Object instance) throws IOException {
@@ -37,7 +38,7 @@ public class MQMessageReceiver {
     }
     
     void handleTextMessage (String text) throws Exception{
-        JampMessage message = messageDecoder.decodeObject(text);
+        JampMessage message = messageDecoder.decode(text);
         JampMessage replyMessage = invoker.invokeMessage(message);
         
         JampMessageEncoder encoder = new JampMessageEncoder();

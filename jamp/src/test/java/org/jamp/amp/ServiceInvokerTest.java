@@ -1,6 +1,8 @@
 package org.jamp.amp;
 
 
+import static org.junit.Assert.assertNotNull;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +23,7 @@ import org.junit.Test;
 
 public class ServiceInvokerTest {
     
-    Decoder <JampMessage, String> messageDecoder = new JampMessageDecoder();
+    Decoder <JampMessage, CharSequence> messageDecoder = new JampMessageDecoder();
 
 
     @Test
@@ -29,7 +31,11 @@ public class ServiceInvokerTest {
         Object methodEncodedAsMessage = getMethodEncodedAsMessage();
         System.out.println(methodEncodedAsMessage);
         SkeletonServiceInvoker serviceInvoker = JampFactoryImpl.factory().createJampServerSkeleton(EmployeeServiceImpl.class);
-        serviceInvoker.invokeMessage(messageDecoder.decodeObject((String)methodEncodedAsMessage));
+        
+        assertNotNull(methodEncodedAsMessage);
+        JampMessage decode = messageDecoder.decode((String)methodEncodedAsMessage);
+        assertNotNull(decode);
+        serviceInvoker.invokeMessage(decode);
         
     }
 

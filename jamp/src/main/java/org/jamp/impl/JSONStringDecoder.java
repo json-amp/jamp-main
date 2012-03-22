@@ -1,11 +1,13 @@
 package org.jamp.impl;
 
+import java.io.Reader;
+
 import org.jamp.Decoder;
 
 
 public class JSONStringDecoder implements Decoder<String, String> {
 
-	public String decodeObject(String string) throws Exception {
+	public String decode(String string) throws Exception {
 		
 		char[] cs = string.toCharArray();
 		StringBuilder builder = new StringBuilder(cs.length);
@@ -33,7 +35,7 @@ public class JSONStringDecoder implements Decoder<String, String> {
 						builder.append("\r");	
 					}else if (c=='u') {
 						if (index+4 < cs.length) {
-							String hex = string.substring(index+1, index+5);
+						    String hex = string.substring(index+1, index+5);
 							char unicode = (char) Integer.parseInt( hex, 16 );
 							builder.append(unicode);
 							index+=4;

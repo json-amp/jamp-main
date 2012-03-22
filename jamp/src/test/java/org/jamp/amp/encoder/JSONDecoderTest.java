@@ -18,7 +18,7 @@ public class JSONDecoderTest {
         
         Decoder decoder = new JSONDecoder();
         Map<String, Object> map = (Map<String, Object>) decoder
-                .decodeObject("{ \"name\":\"rick\"}");
+                .decode("{ \"name\":\"rick\"}");
         assertEquals("rick", map.get("name"));
     }
 
@@ -26,7 +26,7 @@ public class JSONDecoderTest {
     public void simpleDecoderTest() throws Exception {
         Decoder decoder = new JSONDecoder();
         Map<String, Object> map = (Map<String, Object>) decoder
-                .decodeObject("     { \"name\" \t\n : 5 }");
+                .decode("     { \"name\" \t\n : 5 }");
         System.out.println(map);
     }
 
@@ -34,7 +34,7 @@ public class JSONDecoderTest {
     public void simpleDecoderBasicTypes() throws Exception {
         Decoder decoder = new JSONDecoder();
         Map<String, Object> map = (Map<String, Object>) decoder
-                .decodeObject("{" + "\"name\":\"rick\"," + "\"old\":false,"
+                .decode("{" + "\"name\":\"rick\"," + "\"old\":false,"
                         + "\"age\":99," + "\"weight\":122.2,"
                         + "\"phoneNumber\":\t\n\"5205551212\","
                         + "\"mylist\":[1,2,3,4]} ");
@@ -63,7 +63,7 @@ public class JSONDecoderTest {
     public void simpleNestedObject() throws Exception {
         Decoder decoder = new JSONDecoder();
         Map<String, Object> map = (Map<String, Object>) decoder
-                .decodeObject("{ "
+                .decode("{ "
                         + "\"obj\": {\"age\":5, \"obj2\":{\"foo\":7}},"
                         + "\"stop\":true" + "}");
         System.out.println(map);
@@ -73,7 +73,7 @@ public class JSONDecoderTest {
     public void simpleJSONArray() throws Exception {
         Decoder decoder = new JSONDecoder();
         List<Object> list = (List<Object>) decoder
-                .decodeObject("[0,1, 2, 3, 4, 5, 0]");
+                .decode("[0,1, 2, 3, 4, 5, 0]");
         System.out.println(list);
     }
 
@@ -81,35 +81,35 @@ public class JSONDecoderTest {
     public void jsonArrayWithObject() throws Exception {
         Decoder decoder = new JSONDecoder();
         List<Object> list = (List<Object>) decoder
-                .decodeObject("[0,1, 2, 3, 4, 5, 0, {\"foo\":7}]");
+                .decode("[0,1, 2, 3, 4, 5, 0, {\"foo\":7}]");
         System.out.println(list);
     }
 
     @Test
     public void simpleString() throws Exception {
         Decoder decoder = new JSONDecoder();
-        String s = (String) decoder.decodeObject("\"Love\"");
+        String s = (String) decoder.decode("\"Love\"");
         assertEquals("Love", s);
     }
 
     @Test
     public void simpleNumber() throws Exception {
         Decoder decoder = new JSONDecoder();
-        Integer i = (Integer) decoder.decodeObject("5");
+        Integer i = (Integer) decoder.decode("5");
         assertEquals((Integer) 5, i);
     }
 
     @Test
     public void simpleWhiteSpace() throws Exception {
         Decoder decoder = new JSONDecoder();
-        Integer i = (Integer) decoder.decodeObject("\t\n\r\r\n\r\r5");
+        Integer i = (Integer) decoder.decode("\t\n\r\r\n\r\r5");
         assertEquals((Integer) 5, i);
     }
 
     @Test
     public void jsonObjectWithArrays() throws Exception {
         Decoder decoder = new JSONDecoder();
-        decoder.decodeObject("{\"l1\"\t:\t[0,1,2,3], \"l2\"\n:\n[0,1,2,3], \"l3\":[0,1,2,3], \"l4\"\r\n:\r\n[0,1,2,3]}");
+        decoder.decode("{\"l1\"\t:\t[0,1,2,3], \"l2\"\n:\n[0,1,2,3], \"l3\":[0,1,2,3], \"l4\"\r\n:\r\n[0,1,2,3]}");
     }
 
 }

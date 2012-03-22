@@ -26,7 +26,7 @@ public class JSONEncoderTest {
 
         
         JSONDecoder decoder = new JSONDecoder();
-        System.out.println(decoder.decodeObject(encoder.encodeObject(str)));
+        System.out.println(decoder.decode(encoder.encodeObject(str)));
 
         assertEquals("\"\\\\\\/\\b\\f\\r\\n\\t\"", encoder.encodeObject(str));
         
@@ -40,7 +40,7 @@ public class JSONEncoderTest {
         assertEquals("\"\\u00DF\\u00E6\\u00E7\\u00EE\\u00F1king bad~\u007f\\u0080~\"", encoder.encodeObject(str));
         
         JSONDecoder decoder = new JSONDecoder();
-        assertEquals(str, decoder.decodeObject(encoder.encodeObject(str)));
+        assertEquals(str, decoder.decode(encoder.encodeObject(str)));
     }
     
     @Test
@@ -51,7 +51,7 @@ public class JSONEncoderTest {
 
         assertEquals("\"\\\\\\/\\b\\f\\r\\n\\t\"", encoder.encodeObject(str));
 
-        assertEquals(str, decoder.decodeObject(encoder.encodeObject(str)));
+        assertEquals(str, decoder.decode(encoder.encodeObject(str)));
 
     }
 
