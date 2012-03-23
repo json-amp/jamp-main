@@ -96,4 +96,10 @@ public class WebSocketChatServer extends WebSocketServer {
             c.send(text);
         }
     }
+
+    @Override
+    public String onHandshake(WebSocketInternal conn, HttpHeader handshake,
+            String[] protocols) {
+        return "chat1.1";
+    }
 }

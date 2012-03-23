@@ -97,7 +97,7 @@ public class WebSocketChatClient extends JFrame implements ActionListener {
             conneciton = WebSocketConnectionFactory.create();
 
             try {
-                conneciton.connect("ws://localhost:8887/",
+                conneciton.connectWithProtocol(uriField.getText(),
                         new SimpleWebSocketListener() {
 
                             @Override
@@ -155,7 +155,7 @@ public class WebSocketChatClient extends JFrame implements ActionListener {
                                 System.out.println("onBinaryMessage ");
 
                             }
-                        });
+                        }, "caucho-example-chat-protocol");
             } catch (IOException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();

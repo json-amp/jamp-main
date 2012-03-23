@@ -22,6 +22,9 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
     URI uri;
     WebSocketInternal connection = null;
     WebSocketContextImpl context;
+    
+    
+    
 
     @Override
     public void connect(String connectionURI, WebSocketListener wslistener)
@@ -49,17 +52,17 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
         this.doConnect(auri, wslistener);
     }
 
-    private void doConnect(String connectionURI, BaseWebSocketListener base)
+    private void doConnect(String connectionURI, BaseWebSocketListener base, String... protocols)
             throws IOException {
         try {
-            this.doConnect(new URI(connectionURI), base);
+            this.doConnect(new URI(connectionURI), base, protocols);
         } catch (URISyntaxException e) {
             throw new IOException(e);
         }
     }
 
     @SuppressWarnings("nls")
-    private void doConnect(URI auri, BaseWebSocketListener base)
+    private void doConnect(URI auri, BaseWebSocketListener base, String... protocols)
             throws IOException {
 
         if (base == null) {
@@ -116,7 +119,14 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
                         ex.printStackTrace();
                     }
 
-                }, uri, uri.getPort());
+                    @Override
+                    public String onClientHandshake(
+                            WebSocketInternalImpl conn, HttpHeader d,
+                            String[] aprotocols) {
+                        return null;
+                    }
+
+                }, uri, uri.getPort(), protocols);
 
         this.context = new WebSocketContextImpl(this.connection);
 
@@ -162,6 +172,34 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
     @Override
     public void close() {
         connection.clientClose();
+    }
+
+    @Override
+    public void connectWithProtocol(String connectionURL,
+            WebSocketListener alistener, String... protocols) throws IOException {
+        this.doConnect(connectionURL, alistener, protocols);     
+    }
+
+    @Override
+    public void connectWithProtocol(String connectionURL,
+            SimpleWebSocketListener alistener, String... protocols)
+            throws IOException {
+        this.doConnect(connectionURL, alistener, protocols);     
+        
+    }
+
+    @Override
+    public void connectWithProtocol(URI auri, WebSocketListener alistener,
+            String... protocols) throws IOException {
+ 
+        this.doConnect(auri, alistener, protocols);     
+
+    }
+
+    @Override
+    public void connectWithProtocol(URI auri, SimpleWebSocketListener alistener,
+            String... protocols) throws IOException {
+        this.doConnect(auri, alistener, protocols);     
     }
 
 }

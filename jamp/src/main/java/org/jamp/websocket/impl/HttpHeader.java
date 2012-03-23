@@ -21,11 +21,8 @@ public class HttpHeader {
         headers = new LinkedHashMap<String, String>();
     }
 
-    public static HttpHeader createClientRequest() {
-        return new HttpHeader(Type.CLIENT);
-    }
 
-    public static HttpHeader createServerRequest() {
+    public static HttpHeader createServerResponse() {
         return new HttpHeader(Type.SERVER);
     }
 
@@ -56,8 +53,14 @@ public class HttpHeader {
         this.content = content;
     }
 
+    @SuppressWarnings("nls")
     public void putHeader(String name, String value) {
-        headers.put(name, value);
+        if (headers.keySet().contains(name)) {
+            String cvalue = headers.get(name);
+            headers.put(name, cvalue + ", " + value);
+        } else {
+            headers.put(name, value);
+        }
     }
 
     public boolean hasHeader(String name) {
@@ -79,6 +82,23 @@ public class HttpHeader {
 
     public boolean isServer() {
         return type == Type.SERVER;
+    }
+
+    @SuppressWarnings("nls")
+    public static HttpHeader createClientRequest(String... protocols) {
+        HttpHeader header = new HttpHeader(Type.CLIENT);
+        
+        StringBuilder builder = new StringBuilder();
+        if (protocols!=null) {
+            for (int index=0; index < protocols.length; index++) {
+                builder.append(protocols[index]);
+                if (!(index==protocols.length-1)) {
+                    builder.append(", "); //$NON-NLS-1$
+                }
+            }
+            header.putHeader("Sec-WebSocket-Protocol", builder.toString());
+        }
+        return  header;
     }
 
 }

@@ -38,6 +38,9 @@ interface LowLevelListener {
      *            The <tt>WebSocket</tt> instance this event is occuring on.
      */
     public void onStart(WebSocketInternalImpl conn, HttpHeader d);
+    
+    public String onClientHandshake(WebSocketInternalImpl conn, HttpHeader d, String[] protocols);
+
 
     /**
      * Called after <tt>WebSocket#close</tt> is explicity called, or when the

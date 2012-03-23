@@ -346,9 +346,18 @@ public abstract class WebSocketServer {
                         selector.wakeup();
                     }
 
+                    @Override
+                    public String onClientHandshake(WebSocketInternalImpl conn,
+                            HttpHeader d, String[] protocols) {
+                        return onHandshake(conn, d, protocols);
+                    }
+
                 }, clientSocketChannel);
         return connection;
     }
+
+    abstract public String onHandshake(@SuppressWarnings("unused") WebSocketInternal conn,
+            @SuppressWarnings("unused") HttpHeader handshake, String[] protocols) ;
 
     public void onOpen(@SuppressWarnings("unused") WebSocketInternal conn,
             @SuppressWarnings("unused") HttpHeader handshake) {

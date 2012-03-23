@@ -113,6 +113,8 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
     private HttpHeader handshakerequest = null;
 
     private SocketChannel sockchannel;
+    
+    String[] protocols;
 
     /**
      * The 'Selector' used to get event keys from the underlying socket.
@@ -122,7 +124,9 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
     private final Lock clientCloseLock = new ReentrantLock();
 
     public static WebSocketInternalImpl createClientWebSocket(
-            LowLevelListener listener, URI uri, int port) throws IOException {
+            LowLevelListener listener, URI uri, int port, String... protocols) throws IOException {
+        
+        
 
         SocketChannel socketChannel = SocketChannel.open();
         socketChannel.configureBlocking(false);
@@ -131,16 +135,17 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         socketChannel.register(selector, SelectionKey.OP_CONNECT);
 
         return new WebSocketInternalImpl(listener, socketChannel, selector,
-                uri, port);
+                uri, port, protocols);
     }
 
     private WebSocketInternalImpl(LowLevelListener listener,
-            SocketChannel socketchannel, Selector selector, URI url, int port) {
+            SocketChannel socketchannel, Selector selector, URI url, int port, String... protocols) {
         init(listener, socketchannel);
         this.handshakeSetup = true;
         this.selector = selector;
         this.clientURI = url;
         this.port = port;
+        this.protocols = protocols;
     }
 
     public static WebSocketInternal createServerWebSocket(
@@ -165,27 +170,44 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
 
     }
 
-    boolean handleServerRead() throws IOException, WebSocketException {
+    boolean handleServerHandshake() throws IOException, WebSocketException {
         HandshakeState handshakestate = null;
 
         if (handshakeSetup == false) {
             this.setParseMode(role);
             socketBuffer.reset();
-            HttpHeader handshake = this.translateHandshake(socketBuffer);
-            if (!handshake.isClient()) {
+            HttpHeader request = this.translateHandshakeHttp(socketBuffer);
+            if (!request.isClient()) {
                 closeConnection(CloseFrame.PROTOCOL_ERROR,
                         "wrong http function", false);
                 return true;
             }
-            handshakestate = this.acceptHandshakeAsServer(handshake);
+            handshakestate = this.acceptHandshakeAsServer(request);
+            
+            String protocol = request.getHeader("Sec-WebSocket-Protocol");
+            
+            
             if (handshakestate == HandshakeState.MATCHED) {
 
-                HttpHeader asServer = createServerResponseHeader(handshake);
-                writeDirect(createHandshakeBytes(asServer));
+                HttpHeader response = createServerResponseHeader(request);
+                
+                String selectedProtocol = null;
+                if (protocol != null) {
+                    
+                    selectedProtocol = webSocketListener.onClientHandshake(this, request, protocol.split(", "));
+        
+                    if (!protocol.contains(selectedProtocol)) {
+                        close(CloseFrame.PROTOCOL_ERROR, "Subprotocols do not match. Client Sent " + protocol + ". But servrer only supports " + selectedProtocol);                
+                    }
+                }
+
+                
+                response.putHeader("Sec-WebSocket-Protocol", selectedProtocol);
+                writeDirect(createHandshakeBytes(response));
 
                 handshakeSetup = true;
                 handshakeComplete = true;
-                webSocketListener.onStart(this, handshake);
+                webSocketListener.onStart(this, request);
                 handleRead();
                 return true;
             }
@@ -199,11 +221,11 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
 
     }
 
-    boolean handleClientRead() throws IOException, WebSocketException {
+    boolean handleClientHandshake() throws IOException, WebSocketException {
         HandshakeState handshakestate = null;
 
         this.setParseMode(role);
-        HttpHeader tmphandshake = this.translateHandshake(socketBuffer);
+        HttpHeader tmphandshake = this.translateHandshakeHttp(socketBuffer);
         if (!tmphandshake.isServer()) {
             closeConnection(CloseFrame.PROTOCOL_ERROR, "Wwrong http function",
                     false);
@@ -212,6 +234,24 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         HttpHeader handshake = tmphandshake;
         handshakestate = this.acceptHandshakeAsClient(handshakerequest,
                 handshake);
+        
+        String protocol = handshake.getHeader("Sec-WebSocket-Protocol");
+        
+        if (this.protocols!=null) {
+            if (protocol==null) {
+                close(CloseFrame.PROTOCOL_ERROR, "Recieved no subprotocol from server which does not match the protocols sent");
+            }
+            boolean found = false;
+            for (String p : protocols) {
+                if (p.equals(protocol)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                close(CloseFrame.PROTOCOL_ERROR, "Recieved " + protocol + " from server which does not match the protocols sent");
+            }
+        }
         if (handshakestate == HandshakeState.MATCHED) {
             handshakeComplete = true;
             webSocketListener.onStart(this, handshake);
@@ -261,11 +301,11 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
                 socketBuffer.mark();
                 try {
                     if (role == Role.SERVER) {
-                        if (this.handleServerRead()) {
+                        if (this.handleServerHandshake()) {
                             return;
                         }
                     } else if (role == Role.CLIENT) {
-                        if (this.handleClientRead()) {
+                        if (this.handleClientHandshake()) {
                             return;
                         }
                     }
@@ -685,23 +725,24 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
 
     private ByteBuffer incompleteframe;
 
-    public List<ByteBuffer> createHandshakeBytes(HttpHeader handshakedata,
-            boolean withcontent) {
+    public List<ByteBuffer> createHandshakeBytes(HttpHeader header) {
+        
+        boolean withcontent = true;
         StringBuilder bui = new StringBuilder(100);
-        if (handshakedata.isClient()) {
+        if (header.isClient()) {
             bui.append("GET ");
-            bui.append(handshakedata.getResourceDescriptor());
+            bui.append(header.getResourceDescriptor());
             bui.append(" HTTP/1.1");
-        } else if (handshakedata.isServer()) {
-            bui.append("HTTP/1.1 101 " + handshakedata.getHttpStatusMessage());
+        } else if (header.isServer()) {
+            bui.append("HTTP/1.1 101 " + header.getHttpStatusMessage());
         } else {
             throw new RuntimeException("unknow role");
         }
         bui.append("\r\n");
-        Iterator<String> it = handshakedata.getHeaderNames();
+        Iterator<String> it = header.getHeaderNames();
         while (it.hasNext()) {
             String fieldname = it.next();
-            String fieldvalue = handshakedata.getHeader(fieldname);
+            String fieldvalue = header.getHeader(fieldname);
             bui.append(fieldname);
             bui.append(": ");
             bui.append(fieldvalue);
@@ -717,7 +758,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
                     "HttpHeader contains no ASCII characters");
         }
 
-        byte[] content = withcontent ? handshakedata.getContent() : null;
+        byte[] content = withcontent ? header.getContent() : null;
         ByteBuffer bytebuffer = ByteBuffer.allocate((content == null ? 0
                 : content.length) + httpheader.length);
         bytebuffer.put(httpheader);
@@ -727,10 +768,6 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         return Collections.singletonList(bytebuffer);
     }
 
-    public HttpHeader translateHandshake(ByteBuffer buf)
-            throws WebSocketException {
-        return translateHandshakeHttp(buf);
-    }
 
     public int checkAlloc(int bytecount) throws WebSocketException {
         if (bytecount < 0)
@@ -864,7 +901,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
     public HttpHeader createServerResponseHeader(HttpHeader request)
             throws WebSocketException {
 
-        HttpHeader response = HttpHeader.createServerRequest();
+        HttpHeader response = HttpHeader.createServerResponse();
 
         response.putHeader("Upgrade", "websocket");
         response.putHeader("Connection", request.getHeader("Connection"));
@@ -1133,7 +1170,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         }
 
         if (role == Role.CLIENT) {
-            handshake = HttpHeader.createServerRequest();
+            handshake = HttpHeader.createServerResponse();
             handshake.setHttpStatusMessage(firstLineTokens[2]);
         } else {
             // translating/parsing the request from the CLIENT
@@ -1159,9 +1196,6 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
                         .toLowerCase(Locale.ENGLISH).contains("upgrade");
     }
 
-    public List<ByteBuffer> createHandshakeBytes(HttpHeader handshakedata) {
-        return createHandshakeBytes(handshakedata, true);
-    }
 
     private Thread thread;
 
@@ -1277,7 +1311,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
             path += "?" + part2;
         String host = clientURI.getHost() + (port != 80 ? ":" + port : "");
 
-        HttpHeader handshake = HttpHeader.createClientRequest();
+        HttpHeader handshake = HttpHeader.createClientRequest(this.protocols);
         handshake.setResourceDescriptor(path);
         handshake.putHeader("Host", host);
         this.startHandshake(handshake);

@@ -14,7 +14,7 @@ public class WebSocketChattyMain {
     public static void main(String args[]) throws Exception {
         WebSocketConnection connection = WebSocketConnectionFactory.create();
 
-        connection.connect("ws://localhost:8887/",
+        connection.connectWithProtocol("ws://localhost:8887/",
                 new SimpleWebSocketListener() {
 
                     @Override
@@ -53,7 +53,7 @@ public class WebSocketChattyMain {
                         System.out.println("onBinaryMessage ");
 
                     }
-                });
+                }, "chat1.2", "chat1.1");
 
     }
 }
