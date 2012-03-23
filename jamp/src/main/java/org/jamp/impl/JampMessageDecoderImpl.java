@@ -68,6 +68,16 @@ public class JampMessageDecoderImpl implements JampMessageDecoder {
             from = (String) list.get(2);
             errorObject = (Map<String, Object>) list.get(3);
         }
+        
+        if (to==null) {
+            if (action!=null && action.contains(".")) {
+                String[] split = action.split("\\.");
+                String objectName = split[0];
+                action = split[1];
+                to = String.format("soa://service/%s", objectName);
+            }
+
+        }
 
         JampMessage message = org.jamp.Factory.factory().createJampMessage();
         message.setTo(to);

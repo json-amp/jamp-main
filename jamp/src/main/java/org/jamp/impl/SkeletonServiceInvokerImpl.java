@@ -79,15 +79,18 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
 
     }
 
+    @SuppressWarnings("nls")
     private Method findMethod(JampMessage message, Object thisObject) {
         Method method = null;
 
         Method[] methods = thisObject.getClass().getMethods();
 
+        System.out.println(thisObject.getClass().getName());
         System.out.println(message);
 
         for (Method m : methods) {
             if (m.getName().equals(message.getAction())) {
+                System.out.println("method " + m.getName());
                 if (m.getParameterTypes().length == message.getArgs().size()) {
                     method = m;
                     break;
@@ -96,7 +99,7 @@ public class SkeletonServiceInvokerImpl implements SkeletonServiceInvoker {
         }
         if (method == null) {
             throw new IllegalStateException(
-                    Messages.getString("SkeletonServiceInvokerImpl.0")); //$NON-NLS-1$
+                    "Can't find method " + message.getAction()); //$NON-NLS-1$
         }
         return method;
     }

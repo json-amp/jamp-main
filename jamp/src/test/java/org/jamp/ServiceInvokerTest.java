@@ -27,7 +27,7 @@ public class ServiceInvokerTest {
     public void invokerTest() throws Exception {
         Object methodEncodedAsMessage = getMethodEncodedAsMessage();
         System.out.println(methodEncodedAsMessage);
-        SkeletonServiceInvoker serviceInvoker = org.jamp.Factory.factory().createJampServerSkeleton(EmployeeServiceImpl.class);
+        SkeletonServiceInvoker serviceInvoker = org.jamp.Factory.factory().createJampServerSkeletonFromClass(EmployeeServiceImpl.class);
         
         assertNotNull(methodEncodedAsMessage);
         JampMessage decode = messageDecoder.decode((String)methodEncodedAsMessage);

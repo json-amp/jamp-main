@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 
+import org.jamp.impl.MQMessageRouter;
+
 public interface JampFactory {
 
     JampMessageRouter createRouter();
@@ -13,10 +15,7 @@ public interface JampFactory {
     void registerSender(String connectionString,
             JampMessageSender mqMessageSender);
 
-    MQMessageSender createMQMessageSender(String connectionString,
-            String login, String passcode, String destination)
-            throws IOException;
-
+ 
     MQMessageReciever createMQReciever(String connectionString, String login,
             String passcode, String destination, Class<?> serviceClass,
             Object instance, JampMessageDecoder messageDecoder,
@@ -24,9 +23,9 @@ public interface JampFactory {
 
     MessageQueueConnection createMQConnection(JampMessageURL url);
 
-    SkeletonServiceInvoker createJampServerSkeleton(Object instance);
+    SkeletonServiceInvoker createJampServerSkeletonFromObject(Object instance);
 
-    SkeletonServiceInvoker createJampServerSkeleton(Class<?> clazz);
+    SkeletonServiceInvoker createJampServerSkeletonFromClass(Class<?> clazz);
 
     JampMessageSender createRESTSender();
 
@@ -48,5 +47,10 @@ public interface JampFactory {
 
     JampMessage createJampMessageFromBufferedReader(BufferedReader reader)
             throws Exception;
+
+    MQMessageRouter createMQMessageRouter();
+
+    MQMessageSender createMQMessageSender(String connectionString,
+            String login, String passcode) throws IOException;
 
 }

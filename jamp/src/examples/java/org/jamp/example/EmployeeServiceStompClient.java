@@ -16,7 +16,7 @@ public class EmployeeServiceStompClient {
         
         
         MQMessageSender sender = org.jamp.Factory.factory().createMQMessageSender("stomp://localhost:6666/foo", 
-                "rick", "rick", "queue/empService");
+                "rick", "rick");
         
         JampProxyCreator proxy = new JampProxyCreatorImpl( sender );
         

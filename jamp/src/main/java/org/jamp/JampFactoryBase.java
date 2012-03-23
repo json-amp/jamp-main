@@ -13,6 +13,7 @@ import org.jamp.impl.JampMessageDecoderImpl;
 import org.jamp.impl.JampMessageEncoderImpl;
 import org.jamp.impl.JampMessageRouterImpl;
 import org.jamp.impl.MQMessageReceiverImpl;
+import org.jamp.impl.MQMessageRouter;
 import org.jamp.impl.MQMessageSenderImpl;
 import org.jamp.impl.Messages;
 import org.jamp.impl.SkeletonServiceInvokerImpl;
@@ -28,7 +29,7 @@ public class JampFactoryBase implements JampFactory {
     }
 
     @Override
-    public SkeletonServiceInvoker createJampServerSkeleton(Class<?> clazz) {
+    public SkeletonServiceInvoker createJampServerSkeletonFromClass(Class<?> clazz) {
         // Look this up with a service locator design pattern, just as soon as
         // there are two.
         SkeletonServiceInvokerImpl invoker = new SkeletonServiceInvokerImpl(
@@ -37,7 +38,7 @@ public class JampFactoryBase implements JampFactory {
     }
 
     @Override
-    public SkeletonServiceInvoker createJampServerSkeleton(Object instance) {
+    public SkeletonServiceInvoker createJampServerSkeletonFromObject(Object instance) {
         SkeletonServiceInvokerImpl invoker = new SkeletonServiceInvokerImpl(
                 null, instance);
         return invoker;
@@ -81,10 +82,9 @@ public class JampFactoryBase implements JampFactory {
 
     @Override
     public MQMessageSender createMQMessageSender(String connectionString,
-            String login, String passcode, String destination)
+            String login, String passcode)
             throws IOException {
-        // TODO Auto-generated method stub
-        return null;
+        return new MQMessageSenderImpl(connectionString, login, passcode, null);
     }
 
     @Override
@@ -141,6 +141,11 @@ public class JampFactoryBase implements JampFactory {
     @Override
     public JampMessage createJampMessage() {
         return new JampMessage();
+    }
+
+    @Override
+    public MQMessageRouter createMQMessageRouter() {
+        return  new MQMessageRouter();
     }
 
 }

@@ -12,7 +12,7 @@ import org.jamp.impl.JampMessageDecoderImpl;
 public class JampFileProcessorMain {
 
     static SkeletonServiceInvoker serviceInvoker = org.jamp.Factory.factory()
-            .createJampServerSkeleton(EmployeeService.class);
+            .createJampServerSkeletonFromClass(EmployeeService.class);
     static Decoder<JampMessage, CharSequence> messageDecoder = new JampMessageDecoderImpl();
 
     private static String readPayload(File file) throws Exception {

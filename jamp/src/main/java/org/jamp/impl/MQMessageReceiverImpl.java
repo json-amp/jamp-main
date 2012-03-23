@@ -33,10 +33,10 @@ public class MQMessageReceiverImpl implements MQMessageReciever {
         this.messageEncoder = aMessageEncoder;
 
         if (serviceClass != null) {
-            invoker = org.jamp.Factory.factory().createJampServerSkeleton(
+            invoker = org.jamp.Factory.factory().createJampServerSkeletonFromClass(
                     serviceClass);
         } else {
-            invoker = org.jamp.Factory.factory().createJampServerSkeleton(
+            invoker = org.jamp.Factory.factory().createJampServerSkeletonFromObject(
                     instance);
         }
         if (aMessageDecoder == null) {

@@ -19,7 +19,7 @@ public class HttpMessageSenderImpl implements JampMessageSender {
     @Override
     public JampMessage sendMessage(JampMessage message) throws Exception {
 
-        URL url = new URL(message.getTo());
+        URL url = new URL(message.getTo().replace("rest://", "http://"));
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
 
