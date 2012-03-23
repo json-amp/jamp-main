@@ -1,9 +1,9 @@
 *.DS_Store
 *.project
 *.settings
-*/bin
+*bin
 *.classpath
 *.gitignore~
 */build
 *.gradle
-bin/org/jamp/JampFactory.class
+bin
