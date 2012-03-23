@@ -111,7 +111,7 @@ public class WebSocketChatClient extends JFrame implements ActionListener {
                         public void onStart(WebSocketContext acontext) throws IOException {
                               ta.append( "You are connected to ChatServer: \n" );
                               ta.setCaretPosition( ta.getDocument().getLength() );
-                              WebSocketChatClient.this.context = context;
+                              WebSocketChatClient.this.context = acontext;
 
                         }
                         

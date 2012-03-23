@@ -20,8 +20,8 @@ import org.junit.Test;
 
 public class ServiceInvokerTest {
     
-    JampMessageDecoder  messageDecoder;
-    JampMessageEncoder  messageEncoder;
+    JampMessageDecoder  messageDecoder = org.jamp.Factory.factory().createJampMessageDecoder();
+    JampMessageEncoder  messageEncoder = org.jamp.Factory.factory().createJampMessageEncoder();
 
     @Test
     public void invokerTest() throws Exception {

@@ -40,7 +40,7 @@ public interface JampFactory {
 
     JampMessageDecoder createJampMessageDecoder();
 
-    JampMessageEncoder createJampEncoder();
+    JampMessageEncoder createJampMessageEncoder();
 
     JSONDecoder<Object> createJSONObjectDecoder();
     JSONDecoder<List<Object>> createJSONListDecoder();

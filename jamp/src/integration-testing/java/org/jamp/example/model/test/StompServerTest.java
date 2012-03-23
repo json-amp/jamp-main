@@ -14,6 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 
+
+@SuppressWarnings("nls")
 public class StompServerTest {
     
   
@@ -42,7 +44,8 @@ public class StompServerTest {
         }
     }
     
-    void sendCommand(String command, String body, String... headers) throws IOException {
+    @SuppressWarnings("nls")
+    void sendCommand(String command, String body, String... headers)  {
         out.printf("%s\n", command);
         for (String header : headers) {
             out.printf("%s\n",header);            

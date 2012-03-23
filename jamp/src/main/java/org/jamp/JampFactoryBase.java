@@ -106,7 +106,7 @@ public class JampFactoryBase implements JampFactory {
     }
 
     @Override
-    public JampMessageEncoder createJampEncoder() {
+    public JampMessageEncoder createJampMessageEncoder() {
         return new JampMessageEncoderImpl();
     }
 

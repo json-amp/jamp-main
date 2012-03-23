@@ -42,7 +42,7 @@ public class MQMessageReceiverImpl implements MQMessageReciever {
             this.messageDecoder = org.jamp.Factory.factory().createJampMessageDecoder();
         }
         if (aMessageEncoder == null) {
-            this.messageEncoder = org.jamp.Factory.factory().createJampEncoder();
+            this.messageEncoder = org.jamp.Factory.factory().createJampMessageEncoder();
         } 
         
         connection.subscribe(destination, new InternalMQListener());

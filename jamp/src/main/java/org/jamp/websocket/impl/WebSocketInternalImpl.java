@@ -41,6 +41,7 @@ import org.jamp.websocket.impl.Frame.Opcode;
  * @author Nathan Rajlich
  * @author rick (did some major refactors, basically forked org.java_websocket
  */
+@SuppressWarnings("nls")
 public final class WebSocketInternalImpl implements WebSocketInternal {
 
     public static final int READY_STATE_CONNECTING = 0;
@@ -133,12 +134,12 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         Selector selector = Selector.open();
         socketChannel.register(selector, SelectionKey.OP_CONNECT);
 
-        return new WebSocketInternalImpl(listener, socketChannel, true,
+        return new WebSocketInternalImpl(listener, socketChannel, 
                 selector, uri, port);
     }
 
     private WebSocketInternalImpl(LowLevelListener listener,
-            SocketChannel socketchannel, boolean b, Selector selector, URI url,
+            SocketChannel socketchannel, Selector selector, URI url,
             int port) {
         init(listener, socketchannel);
         this.handshakeSetup = true;
@@ -186,7 +187,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
                 if (handshakestate == HandshakeState.MATCHED) {
                     
                     HttpHeader asServer = createServerResponseHeader(handshake);
-                    writeDirect(createHandshakeBytes(asServer, role));
+                    writeDirect(createHandshakeBytes(asServer));
 
                     handshakeSetup = true;
                     handshakeComplete = true;
@@ -322,7 +323,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
                                     // remember the frame whose payload is about
                                     // to be continued
                                     currentFrame = frame;
-                                    currentFrame.setSeriesHead(true);
+                                    currentFrame.setSeriesHead();
                                 }
                             } else if (frame.getOpcode() == Opcode.CONTINIOUS) {
                                 currentFrame.append(frame);
@@ -346,6 +347,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         }
     }
 
+    @Override
     public void close(int code, String message) {
         if (DEBUG) System.out.printf("CLOSE CALLED %s, %s\n\n", code, message);
         
@@ -356,6 +358,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         }
     }
 
+    @Override
     public void closeDirect(int code, String message) throws IOException {
         if (!closeHandshakeSent) {
             if (handshakeComplete) {
@@ -429,6 +432,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         closeConnection(code, "", remote);
     }
 
+    @Override
     public void close(int code) {
         close(code, "");
     }
@@ -437,6 +441,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         close(e.getCloseCode(), e.getMessage());
     }
 
+    @Override
     public void send(String text) {
         if (text == null)
             throw new IllegalArgumentException(
@@ -448,6 +453,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         }
     }
 
+    @Override
     public void send(byte[] bytes) {
         
         if (bytes == null)
@@ -497,13 +503,14 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
      * Empty the internal buffer, sending all the pending data before
      * continuing.
      */
+    @Override
     public void flush() throws IOException {
         ByteBuffer buffer = this.bufferQueue.peek();
         while (buffer != null) {
             sockchannel.write(buffer);
             if (buffer.remaining() > 0) {
                 continue;
-            } else {
+            }
                 synchronized (bufferQueueTotalAmount) {
                     // subtract this amount of data from the total queued
                     // (synchronized over this object)
@@ -511,7 +518,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
                 }
                 this.bufferQueue.poll(); // Buffer finished. Remove it.
                 buffer = this.bufferQueue.peek();
-            }
+            
         }
     }
 
@@ -525,7 +532,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
                 .postProcessHandshakeRequestAsClient(handshakedata);
 
         // Send
-        channelWrite(this.createHandshakeBytes(this.handshakerequest, role));
+        channelWrite(this.createHandshakeBytes(this.handshakerequest));
     }
 
     private void channelWrite(ByteBuffer buf) throws InterruptedException {
@@ -589,31 +596,38 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
     }
 
 
+    @Override
     public InetSocketAddress getRemoteSocketAddress() {
         return (InetSocketAddress) sockchannel.socket()
                 .getRemoteSocketAddress();
     }
 
+    @Override
     public InetSocketAddress getLocalSocketAddress() {
         return (InetSocketAddress) sockchannel.socket().getLocalSocketAddress();
     }
 
+    @Override
     public boolean isConnecting() {
         return (!connectionClosed && !closeHandshakeSent && !handshakeComplete);
     }
 
+    @Override
     public boolean isOpen() {
         return (!connectionClosed && !closeHandshakeSent && handshakeComplete);
     }
 
+    @Override
     public boolean isClosing() {
         return (!connectionClosed && closeHandshakeSent);
     }
 
+    @Override
     public boolean isClosed() {
         return connectionClosed;
     }
 
+    @Override
     public int getReadyState() {
         if (isConnecting()) {
             return READY_STATE_CONNECTING;
@@ -628,10 +642,12 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         return -1; // < This can't happen, by design!
     }
 
+    @Override
     public int hashCode() {
         return super.hashCode();
     }
 
+    @Override
     public String toString() {
         return super.toString(); // its nice to be able to set breakpoints here
     }
@@ -676,7 +692,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
     private ByteBuffer incompleteframe;
 
     public List<ByteBuffer> createHandshakeBytes(HttpHeader handshakedata,
-            Role ownrole, boolean withcontent) {
+            boolean withcontent) {
         StringBuilder bui = new StringBuilder(100);
         if (handshakedata.isClient()) {
             bui.append("GET ");
@@ -718,7 +734,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
 
     public HttpHeader translateHandshake(ByteBuffer buf)
             throws WebSocketException {
-        return translateHandshakeHttp(buf, role);
+        return translateHandshakeHttp(buf);
     }
 
     public int checkAlloc(int bytecount) throws WebSocketException {
@@ -747,6 +763,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         return HandshakeState.NOT_MATCHED;
     }
 
+    @SuppressWarnings("cast")
     public ByteBuffer createBinaryFrame(Frame framedata) {
         byte[] mes = framedata.getPayloadData();
         boolean mask = role == Role.CLIENT; // framedata.getTransfereMasked();
@@ -796,7 +813,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         curframe.setFinished(true);
         curframe.setOptcode(Opcode.BINARY);
         curframe.setTransferMask(mask);
-        return Collections.singletonList((Frame) curframe);
+        return Collections.singletonList(curframe);
     }
 
     public List<Frame> createFrames(String text, boolean mask) throws WebSocketException {
@@ -805,7 +822,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         curframe.setFinished(true);
         curframe.setOptcode(Opcode.TEXT);
         curframe.setTransferMask(mask);
-        return Collections.singletonList((Frame) curframe);
+        return Collections.singletonList(curframe);
     }
 
     private byte fromOpcode(Opcode opcode) {
@@ -968,6 +985,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         return frames;
     }
 
+    @SuppressWarnings("cast")
     public Frame translateSingleFrame(ByteBuffer buffer)
             throws IncompleteException, WebSocketException {
         int maxpacketsize = buffer.limit() - buffer.position();
@@ -1017,9 +1035,9 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
                 long length = new BigInteger(bytes).longValue();
                 if (length > Integer.MAX_VALUE) {
                     throw new WebSocketException(CloseFrame.TOOBIG, "Payloadsize is to big...");
-                } else {
+                } 
                     payloadlength = (int) length;
-                }
+                
             }
         }
 
@@ -1055,6 +1073,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         return frame;
     }
 
+    @Override
     public void reset() {
         incompleteframe = null;
     }
@@ -1102,7 +1121,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
 
     }
 
-    private HttpHeader translateHandshakeHttp(ByteBuffer buf, Role role)
+    private HttpHeader translateHandshakeHttp(ByteBuffer buf)
             throws WebSocketException {
         HttpHeader handshake;
 
@@ -1144,13 +1163,13 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
                         .toLowerCase(Locale.ENGLISH).contains("upgrade");
     }
 
-    public List<ByteBuffer> createHandshakeBytes(HttpHeader handshakedata,
-            Role ownrole) {
-        return createHandshakeBytes(handshakedata, ownrole, true);
+    public List<ByteBuffer> createHandshakeBytes(HttpHeader handshakedata) {
+        return createHandshakeBytes(handshakedata, true);
     }
 
     private Thread thread;
 
+    @Override
     public void clientClose() {
         if (thread != null) {
             thread.interrupt();
@@ -1162,9 +1181,11 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
 
     }
 
+    @Override
     public void startClient() {
         thread = new Thread(new Runnable() {
 
+            @Override
             public void run() {
                 runClient();
             }
@@ -1173,6 +1194,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
 
     }
 
+    @Override
     public void runClient() {
         try/* IO */{
             while (!this.isClosed()) {

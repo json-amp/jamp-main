@@ -76,11 +76,13 @@ public abstract class WebSocketServer  {
      * 
      * @throws IllegalStateException
      */
+    @SuppressWarnings("nls")
     public void start() {
         if (thread != null)
             throw new IllegalStateException("Already started");
         new Thread(new Runnable() {
             
+            @Override
             public void run() {
                 WebSocketServer.this.run(); 
             }
@@ -149,11 +151,12 @@ public abstract class WebSocketServer  {
 
         }
         
-        Thread thread;
+        Thread t;
         void start() {
             
-             thread = new Thread(new Runnable() {
+             t = new Thread(new Runnable() {
                 
+                @Override
                 public void run() {
                     runIt();
                 }
@@ -206,6 +209,7 @@ public abstract class WebSocketServer  {
     }
 
     // Runnable IMPLEMENTATION /////////////////////////////////////////////////
+    @SuppressWarnings("nls")
     public void run() {
         if (thread != null)
             throw new IllegalStateException("This instance of "
@@ -345,20 +349,20 @@ public abstract class WebSocketServer  {
 
 
 
-    public void onOpen(WebSocketInternal conn, HttpHeader handshake) {
+    public void onOpen(@SuppressWarnings("unused") WebSocketInternal conn, @SuppressWarnings("unused") HttpHeader handshake) {
     }
 
-    public void onClose(WebSocketInternal conn, int code, String reason,
-            boolean remote) {
+    public void onClose(@SuppressWarnings("unused") WebSocketInternal conn, @SuppressWarnings("unused") int code, @SuppressWarnings("unused") String reason,
+            @SuppressWarnings("unused") boolean remote) {
     }
 
-    public void onMessage(WebSocketInternal conn, String message) {
+    public void onMessage(@SuppressWarnings("unused") WebSocketInternal conn, @SuppressWarnings("unused") String message) {
     }
 
-    public void onError(WebSocketInternal conn, Exception ex) {
+    public void onError(@SuppressWarnings("unused") WebSocketInternal conn, @SuppressWarnings("unused") Exception ex) {
     }
 
-    public void onMessage(WebSocketInternal conn, byte[] message) {
+    public void onMessage(@SuppressWarnings("unused") WebSocketInternal conn, @SuppressWarnings("unused") byte[] message) {
     };
 
 }

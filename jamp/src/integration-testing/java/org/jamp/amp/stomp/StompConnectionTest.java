@@ -8,10 +8,10 @@ import org.jamp.impl.StompConnection;
 import org.junit.Test;
 
 
+@SuppressWarnings("nls")
 public class StompConnectionTest {
 
-    
-    @Test(timeout=15000)    
+     @Test(timeout=15000)    
     public void testSend () throws IOException {
         MessageQueueConnection connection = new StompConnection();
         connection.connect("stomp://localhost:6666/foo", "rick", "rick");
@@ -20,11 +20,13 @@ public class StompConnectionTest {
         
         MQMessageListener messageListener = new MQMessageListener() {
             
+            @Override
             public void onTextMessage(String text) {
                 System.out.println("GOT MESSAGE    " + text);
                 
             }
             
+            @Override
             public void onBinaryMessage(String text) {
                  
             }

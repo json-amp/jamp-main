@@ -6,3 +6,4 @@
 *.gitignore~
 */build
 *.gradle
+bin/org/jamp/JampFactory.class
