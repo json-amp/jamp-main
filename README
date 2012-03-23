@@ -1,3 +1,29 @@
+4/23/2012
+Some major refactoring to force code to use Factory instead of creating radmon helper classes (so someone can replace
+said classes one day if needed). Interface clean up. 
+
+WebSocket support for client side now supports subprotocol handling. (Sec-WebSocket-Protocol).
+I got a swing app talking to the Caucho Resin WebSocket example that I wrote.
+I'd like to get same app talking to Jetty (low priority but something I would like to try).
+
+Lots of cleanup. 
+
+The early routing seems to work, more work needs to be done but getting closer.
+Want to intergate HTTP/REST forward, Async (Blocking Queues) and STOMP then 
+done with routing for RI (for now). 
+
+Need to check in the Servlet/HTTP work that I have done so far. (Need seperate projects for this
+as they depend on Java EE not just Java).
+
+Need to start thinking about what a JavaScript client for JAMP would look like. 
+Given the state of WebSockets, I think said library would need an easy fallback to long poll, ajax.
+
+After the above is done, then I am going to port it all to Python.
+
+
+
+
+
 4/14/2012
 Took a break. Then a detour into adding WebSockets support. Some websockets support added.
 JAMP can now send/recieve websockets.
