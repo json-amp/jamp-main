@@ -1,13 +1,11 @@
 package org.jamp.websocket.impl;
 
-
 /**
  * Implemented by <tt>WebSocketClient</tt> and <tt>WebSocketServer</tt>. The
  * methods within are called by <tt>WebSocket</tt>. Almost every method takes a
  * first parameter conn which represents the source of the respective event.
  */
 interface LowLevelListener {
-
 
     /**
      * Called when an entire text frame has been received. Do whatever you want

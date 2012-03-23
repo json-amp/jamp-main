@@ -7,8 +7,6 @@ import org.jamp.websocket.impl.Frame.Opcode;
  */
 abstract class LowLevelListenerAdapter implements LowLevelListener {
 
-
-
     /**
      * This default implementation does not do anything. Go ahead and overwrite
      * it.
@@ -28,8 +26,7 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      *      Handshakedata)
      */
     @Override
-    public void onStart(WebSocketInternalImpl conn,
-            HttpHeader handshake) {
+    public void onStart(WebSocketInternalImpl conn, HttpHeader handshake) {
     }
 
     /**
@@ -96,12 +93,11 @@ abstract class LowLevelListenerAdapter implements LowLevelListener {
      */
     @Override
     public void errorHandler(WebSocketInternal conn, Exception ex) {
-        ex.printStackTrace(); //add some logging here... TODO
+        ex.printStackTrace(); // add some logging here... TODO
     }
-    
+
     @Override
     public void onWriteDemand(WebSocketInternal conn) {
     }
-
 
 }

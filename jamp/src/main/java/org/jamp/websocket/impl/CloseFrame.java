@@ -2,7 +2,6 @@ package org.jamp.websocket.impl;
 
 import java.nio.ByteBuffer;
 
-
 public class CloseFrame extends Frame {
 
     /**
@@ -110,7 +109,7 @@ public class CloseFrame extends Frame {
     }
 
     @SuppressWarnings("nls")
-    private void initCloseCode() throws WebSocketException  {
+    private void initCloseCode() throws WebSocketException {
         code = CloseFrame.NOCODE;
         byte[] payload = getPayloadData();
         if (payload.length >= 2) {
@@ -152,7 +151,7 @@ public class CloseFrame extends Frame {
     }
 
     @Override
-    public void setPayload(byte[] payload)  throws WebSocketException{
+    public void setPayload(byte[] payload) throws WebSocketException {
         super.setPayload(payload);
         initCloseCode();
         initMessage();

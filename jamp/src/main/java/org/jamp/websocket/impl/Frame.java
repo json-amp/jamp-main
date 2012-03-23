@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * 
  * @author Rick Hightower
- *
+ * 
  */
 public class Frame {
 
@@ -57,27 +57,27 @@ public class Frame {
     public byte[] getPayloadData() {
         if (!head) {
             return payLoadBuffer.array();
-        } 
-            int size = 0;
-            List <byte[]> buffers = new ArrayList<byte[]>();
-            if (payLoadBuffer!=null) {
-                byte[] buffer = payLoadBuffer.array();
-                size += buffer.length;
-                buffers.add(buffer);
-            }
-            for (Frame frame : payloadFrameSeries) {
-                byte[] buffer = frame.payLoadBuffer.array();
-                size += buffer.length;
-                buffers.add(buffer);
-            }
-            
-            ByteBuffer byteBuffer = ByteBuffer.allocate(size);
-            
-            for (byte[] buf : buffers) {
-                byteBuffer.put(buf);
-            }
-            
-            return byteBuffer.array();
+        }
+        int size = 0;
+        List<byte[]> buffers = new ArrayList<byte[]>();
+        if (payLoadBuffer != null) {
+            byte[] buffer = payLoadBuffer.array();
+            size += buffer.length;
+            buffers.add(buffer);
+        }
+        for (Frame frame : payloadFrameSeries) {
+            byte[] buffer = frame.payLoadBuffer.array();
+            size += buffer.length;
+            buffers.add(buffer);
+        }
+
+        ByteBuffer byteBuffer = ByteBuffer.allocate(size);
+
+        for (byte[] buf : buffers) {
+            byteBuffer.put(buf);
+        }
+
+        return byteBuffer.array();
     }
 
     public void setFinished(boolean fin) {
@@ -88,7 +88,7 @@ public class Frame {
         this.optcode = optcode;
     }
 
-    public void setPayload(byte[] payload) throws WebSocketException  {
+    public void setPayload(byte[] payload) throws WebSocketException {
         payLoadBuffer = ByteBuffer.wrap(payload);
     }
 
@@ -96,28 +96,23 @@ public class Frame {
         this.transferMask = transferMask;
     }
 
-    List <Frame> payloadFrameSeries;
-    
-    public void append(Frame nextFrameInSeries)  {
-          payloadFrameSeries.add(nextFrameInSeries);
-          finished = nextFrameInSeries.finished;
+    List<Frame> payloadFrameSeries;
+
+    public void append(Frame nextFrameInSeries) {
+        payloadFrameSeries.add(nextFrameInSeries);
+        finished = nextFrameInSeries.finished;
     }
 
     @SuppressWarnings("nls")
     @Override
     public String toString() {
-        return "Framedata{ optcode:"
-                + getOpcode()
-                + ", fin:"
-                + isFinished()
-                + ", payloadlength:"
-                + payLoadBuffer.limit()
-                + ", payload:"
+        return "Framedata{ optcode:" + getOpcode() + ", fin:" + isFinished()
+                + ", payloadlength:" + payLoadBuffer.limit() + ", payload:"
                 + convertToUTF8Bytes(new String(payLoadBuffer.array())) + "}";
     }
 
     boolean head;
-    
+
     public void setSeriesHead() {
         head = true;
         payloadFrameSeries = new ArrayList<Frame>();
@@ -127,30 +122,32 @@ public class Frame {
         this.setPayload(convertToUTF8Bytes(text));
 
     }
+
     @SuppressWarnings("nls")
-    byte[] convertToUTF8Bytes( String s ) {
+    byte[] convertToUTF8Bytes(String s) {
         try {
-            return s.getBytes( "UTF8" );
-        } catch ( UnsupportedEncodingException e ) {
-            throw new RuntimeException( e );
+            return s.getBytes("UTF8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
     }
-    
-    String stringUtf8( byte[] bytes ) throws WebSocketException {
-        return stringUtf8( bytes, 0, bytes.length );
+
+    String stringUtf8(byte[] bytes) throws WebSocketException {
+        return stringUtf8(bytes, 0, bytes.length);
     }
 
-    String stringUtf8( byte[] bytes, int off, int length ) throws WebSocketException {
+    String stringUtf8(byte[] bytes, int off, int length)
+            throws WebSocketException {
         @SuppressWarnings("nls")
-        CharsetDecoder decode = Charset.forName( "UTF8" ).newDecoder();
-        decode.onMalformedInput( CodingErrorAction.REPORT );
-        decode.onUnmappableCharacter( CodingErrorAction.REPORT );
+        CharsetDecoder decode = Charset.forName("UTF8").newDecoder();
+        decode.onMalformedInput(CodingErrorAction.REPORT);
+        decode.onUnmappableCharacter(CodingErrorAction.REPORT);
         String s;
         try {
-            ByteBuffer byteBuffer = ByteBuffer.wrap( bytes, off, length );
-            s = decode.decode( byteBuffer ).toString();
-        } catch ( CharacterCodingException e ) {
-            throw new WebSocketException( CloseFrame.NO_UTF8, e );
+            ByteBuffer byteBuffer = ByteBuffer.wrap(bytes, off, length);
+            s = decode.decode(byteBuffer).toString();
+        } catch (CharacterCodingException e) {
+            throw new WebSocketException(CloseFrame.NO_UTF8, e);
         }
         return s;
     }
@@ -158,6 +155,5 @@ public class Frame {
     public String getPayloadDataAsUTF8() {
         return this.stringUtf8(getPayloadData());
     }
-
 
 }

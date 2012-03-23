@@ -13,8 +13,9 @@ public interface JSONLevelConversion {
     Object coerceListToArray(List<Object> list, Class<?> paraType)
             throws Exception;
 
-    Collection<Object> coerceListToCollection(List<Object> list, Class<?> paraType,
-            Type[] types) throws ClassNotFoundException, Exception;
+    Collection<Object> coerceListToCollection(List<Object> list,
+            Class<?> paraType, Type[] types) throws ClassNotFoundException,
+            Exception;
 
     Object coerceList(List<Object> list, Class<?> paraType, Type[] types)
             throws Exception;
@@ -27,7 +28,7 @@ public interface JSONLevelConversion {
 
     Number coerceNumber(Object inputArgument, Class<?> paraType);
 
-    List<Object> coerceFromListToFinalType(List<Object> list, Class<?>[] concreteTypes)
-            throws Exception;
+    List<Object> coerceFromListToFinalType(List<Object> list,
+            Class<?>[] concreteTypes) throws Exception;
 
 }

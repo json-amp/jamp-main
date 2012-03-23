@@ -19,47 +19,51 @@ import org.jamp.impl.SkeletonServiceInvokerImpl;
 import org.jamp.impl.StompConnection;
 
 public class JampFactoryBase implements JampFactory {
-    
-    Map <String, JampMessageSender> mqSenders = Collections.synchronizedMap(new HashMap<String, JampMessageSender>());
-    
-    
-    
+
+    Map<String, JampMessageSender> mqSenders = Collections
+            .synchronizedMap(new HashMap<String, JampMessageSender>());
+
+    protected JampFactoryBase() {
+
+    }
+
     @Override
     public SkeletonServiceInvoker createJampServerSkeleton(Class<?> clazz) {
-        //Look this up with a service locator design pattern, just as soon as there are two.
-        SkeletonServiceInvokerImpl invoker = new SkeletonServiceInvokerImpl(clazz, null);
-        return invoker;
-    }
-    
-    @Override
-    public SkeletonServiceInvoker createJampServerSkeleton(Object instance) {
-        SkeletonServiceInvokerImpl invoker = new SkeletonServiceInvokerImpl(null, instance);
+        // Look this up with a service locator design pattern, just as soon as
+        // there are two.
+        SkeletonServiceInvokerImpl invoker = new SkeletonServiceInvokerImpl(
+                clazz, null);
         return invoker;
     }
 
-    
     @Override
-    public MessageQueueConnection createMQConnection (JampMessageURL url) {
-        
+    public SkeletonServiceInvoker createJampServerSkeleton(Object instance) {
+        SkeletonServiceInvokerImpl invoker = new SkeletonServiceInvokerImpl(
+                null, instance);
+        return invoker;
+    }
+
+    @Override
+    public MessageQueueConnection createMQConnection(JampMessageURL url) {
+
         if (url.getScheme().equals("stomp")) { //$NON-NLS-1$
             return new StompConnection();
         }
         throw new IllegalStateException(Messages.getString("JampFactoryBase.1")); //$NON-NLS-1$
-        
+
     }
- 
 
     @Override
     public void registerSender(String connectionString,
             JampMessageSender mqMessageSender) {
         this.mqSenders.put(connectionString, mqMessageSender);
     }
-    
+
     @Override
-    public JampMessageSender lookupSender (String connectionString) {
+    public JampMessageSender lookupSender(String connectionString) {
         return this.mqSenders.get(connectionString);
     }
-    
+
     @Override
     public JampMessageRouter createRouter() {
         return new JampMessageRouterImpl();
@@ -67,7 +71,7 @@ public class JampFactoryBase implements JampFactory {
 
     @Override
     public JampMessageSender createRESTSender() {
-       return new HttpMessageSenderImpl();
+        return new HttpMessageSenderImpl();
     }
 
     @Override
@@ -89,15 +93,18 @@ public class JampFactoryBase implements JampFactory {
             Class<?> serviceClass, Object instance,
             JampMessageDecoder messageDecoder, JampMessageEncoder messageEncoder)
             throws IOException {
-        return new MQMessageReceiverImpl(connectionString, login, passcode, destination, serviceClass, instance, messageDecoder, messageEncoder);
+        return new MQMessageReceiverImpl(connectionString, login, passcode,
+                destination, serviceClass, instance, messageDecoder,
+                messageEncoder);
     }
 
     @Override
     public MQMessageSender createMQMessageSender(String connectionString,
             String login, String passcode, String destination,
             JampMessageDecoder messageDecoder) throws IOException {
-        
-        return new MQMessageSenderImpl(connectionString, login, passcode, messageDecoder);
+
+        return new MQMessageSenderImpl(connectionString, login, passcode,
+                messageDecoder);
     }
 
     @Override
@@ -121,13 +128,19 @@ public class JampFactoryBase implements JampFactory {
     }
 
     @Override
-    public JampMessage createMessage(BufferedReader reader) throws Exception {
+    public JampMessage createJampMessageFromBufferedReader(BufferedReader reader)
+            throws Exception {
         StringBuilder builder = new StringBuilder(512);
         String line;
-        while ( (line = reader.readLine()) != null){
+        while ((line = reader.readLine()) != null) {
             builder.append(line);
         }
         return this.createJampMessageDecoder().decode(builder);
+    }
+
+    @Override
+    public JampMessage createJampMessage() {
+        return new JampMessage();
     }
 
 }

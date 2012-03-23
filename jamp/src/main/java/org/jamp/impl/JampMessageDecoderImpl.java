@@ -9,11 +9,14 @@ import org.jamp.JampMessage;
 import org.jamp.JampMessageDecoder;
 
 /** Encodes an JAMP input object (now just string) into a Message. */
-public class JampMessageDecoderImpl implements JampMessageDecoder{
-	enum ParseMode{messageType, to, from, methodName, done};
-	
-	JSONDecoder<List<Object>> jsonDecoder = Factory.factory().createJSONListDecoder();
-	
+public class JampMessageDecoderImpl implements JampMessageDecoder {
+    enum ParseMode {
+        messageType, to, from, methodName, done
+    };
+
+    JSONDecoder<List<Object>> jsonDecoder = Factory.factory()
+            .createJSONListDecoder();
+
     @Override
     @SuppressWarnings("unchecked")
     public JampMessage decode(CharSequence payload) throws Exception {
@@ -22,24 +25,23 @@ public class JampMessageDecoderImpl implements JampMessageDecoder{
             List<Object> list = jsonDecoder.decode(payload);
             return listToMessage(payload, list);
         } catch (Exception ex) {
-            throw new IllegalStateException(Messages.getString("JampMessageDecoderImpl.0"), ex); //$NON-NLS-1$
+            throw new IllegalStateException(
+                    Messages.getString("JampMessageDecoderImpl.0"), ex); //$NON-NLS-1$
         }
-        
-    }
-    
 
+    }
 
     @SuppressWarnings({ "nls", "unchecked" })
     private JampMessage listToMessage(CharSequence payload, List<Object> list) {
         String type = (String) list.get(0);
         String to = null;
         String from = null;
-        String action =  null;
-        List <Object> args = null;
+        String action = null;
+        List<Object> args = null;
         String queryId = null;
         Object replyObject = null;
         Map<String, Object> errorObject = null;
-        
+
         if (type.equals("send")) { //$NON-NLS-1$
             to = (String) list.get(1);
             from = (String) list.get(2);
@@ -66,8 +68,8 @@ public class JampMessageDecoderImpl implements JampMessageDecoder{
             from = (String) list.get(2);
             errorObject = (Map<String, Object>) list.get(3);
         }
-        
-        JampMessage message = new JampMessage(type);
+
+        JampMessage message = org.jamp.Factory.factory().createJampMessage();
         message.setTo(to);
         message.setFrom(from);
         message.setAction(action);
@@ -79,6 +81,4 @@ public class JampMessageDecoderImpl implements JampMessageDecoder{
         return message;
     }
 
-
-	
 }

@@ -58,18 +58,15 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
     public enum Role {
         CLIENT, SERVER
     }
-    
+
     public enum HandshakeState {
-        MATCHED,
-        NOT_MATCHED,
-        MATCHING
+        MATCHED, NOT_MATCHED, MATCHING
     }
 
-
     private static/* final */boolean DEBUG = true; // must be final in the
-                                                    // future in order to take
-                                                    // advantage of VM
-                                                    // optimization
+                                                   // future in order to take
+                                                   // advantage of VM
+                                                   // optimization
 
     private URI clientURI = null;
     int port;
@@ -125,8 +122,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
     private final Lock clientCloseLock = new ReentrantLock();
 
     public static WebSocketInternalImpl createClientWebSocket(
-            LowLevelListener listener, URI uri, int port)
-            throws IOException {
+            LowLevelListener listener, URI uri, int port) throws IOException {
 
         SocketChannel socketChannel = SocketChannel.open();
         socketChannel.configureBlocking(false);
@@ -134,13 +130,12 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         Selector selector = Selector.open();
         socketChannel.register(selector, SelectionKey.OP_CONNECT);
 
-        return new WebSocketInternalImpl(listener, socketChannel, 
-                selector, uri, port);
+        return new WebSocketInternalImpl(listener, socketChannel, selector,
+                uri, port);
     }
 
     private WebSocketInternalImpl(LowLevelListener listener,
-            SocketChannel socketchannel, Selector selector, URI url,
-            int port) {
+            SocketChannel socketchannel, Selector selector, URI url, int port) {
         init(listener, socketchannel);
         this.handshakeSetup = true;
         this.selector = selector;
@@ -159,8 +154,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         this.role = Role.SERVER;
     }
 
-    private void init(LowLevelListener listener,
-            SocketChannel socketchannel) {
+    private void init(LowLevelListener listener, SocketChannel socketchannel) {
         this.sockchannel = socketchannel;
         this.bufferQueue = new LinkedBlockingQueue<ByteBuffer>(10);
         this.socketBuffer = ByteBuffer.allocate(65558);
@@ -175,26 +169,26 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         HandshakeState handshakestate = null;
 
         if (handshakeSetup == false) {
-                this.setParseMode(role);
-                socketBuffer.reset();
-                HttpHeader handshake = this.translateHandshake(socketBuffer);
-                if (!handshake.isClient()) {
-                    closeConnection(CloseFrame.PROTOCOL_ERROR,
-                            "wrong http function", false);
-                    return true;
-                }
-                handshakestate = this.acceptHandshakeAsServer(handshake);
-                if (handshakestate == HandshakeState.MATCHED) {
-                    
-                    HttpHeader asServer = createServerResponseHeader(handshake);
-                    writeDirect(createHandshakeBytes(asServer));
+            this.setParseMode(role);
+            socketBuffer.reset();
+            HttpHeader handshake = this.translateHandshake(socketBuffer);
+            if (!handshake.isClient()) {
+                closeConnection(CloseFrame.PROTOCOL_ERROR,
+                        "wrong http function", false);
+                return true;
+            }
+            handshakestate = this.acceptHandshakeAsServer(handshake);
+            if (handshakestate == HandshakeState.MATCHED) {
 
-                    handshakeSetup = true;
-                    handshakeComplete = true;
-                    webSocketListener.onStart(this, handshake);
-                    handleRead();
-                    return true;
-                }
+                HttpHeader asServer = createServerResponseHeader(handshake);
+                writeDirect(createHandshakeBytes(asServer));
+
+                handshakeSetup = true;
+                handshakeComplete = true;
+                webSocketListener.onStart(this, handshake);
+                handleRead();
+                return true;
+            }
 
             if (handshakeSetup == false) {
                 close(CloseFrame.PROTOCOL_ERROR, "no this matches");
@@ -314,7 +308,8 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
                             // process non control frames
                             if (currentFrame == null) {
                                 if (frame.getOpcode() == Opcode.CONTINIOUS) {
-                                    throw new WebSocketException(CloseFrame.PROTOCOL_ERROR,
+                                    throw new WebSocketException(
+                                            CloseFrame.PROTOCOL_ERROR,
                                             "unexpected continious frame");
                                 } else if (frame.isFinished()) {
                                     // receive normal onframe message
@@ -349,8 +344,9 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
 
     @Override
     public void close(int code, String message) {
-        if (DEBUG) System.out.printf("CLOSE CALLED %s, %s\n\n", code, message);
-        
+        if (DEBUG)
+            System.out.printf("CLOSE CALLED %s, %s\n\n", code, message);
+
         try {
             closeDirect(code, message);
         } catch (IOException e) {
@@ -455,7 +451,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
 
     @Override
     public void send(byte[] bytes) {
-        
+
         if (bytes == null)
             throw new IllegalArgumentException(
                     "Cannot send 'null' data to a WebSocket.");
@@ -511,14 +507,14 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
             if (buffer.remaining() > 0) {
                 continue;
             }
-                synchronized (bufferQueueTotalAmount) {
-                    // subtract this amount of data from the total queued
-                    // (synchronized over this object)
-                    bufferQueueTotalAmount -= buffer.limit();
-                }
-                this.bufferQueue.poll(); // Buffer finished. Remove it.
-                buffer = this.bufferQueue.peek();
-            
+            synchronized (bufferQueueTotalAmount) {
+                // subtract this amount of data from the total queued
+                // (synchronized over this object)
+                bufferQueueTotalAmount -= buffer.limit();
+            }
+            this.bufferQueue.poll(); // Buffer finished. Remove it.
+            buffer = this.bufferQueue.peek();
+
         }
     }
 
@@ -584,8 +580,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
 
     private void deliverMessage(Frame d) throws WebSocketException {
         if (d.getOpcode() == Opcode.TEXT) {
-            webSocketListener.onMessageText(this,
-                    d.getPayloadDataAsUTF8());
+            webSocketListener.onMessageText(this, d.getPayloadDataAsUTF8());
         } else if (d.getOpcode() == Opcode.BINARY) {
             webSocketListener.onMessageBinary(this, d.getPayloadData());
         } else {
@@ -594,7 +589,6 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
             assert (false);
         }
     }
-
 
     @Override
     public InetSocketAddress getRemoteSocketAddress() {
@@ -715,11 +709,12 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         }
         bui.append("\r\n");
         byte[] httpheader;
-        
+
         try {
-            httpheader = (bui.toString()).getBytes( "ASCII" );
+            httpheader = (bui.toString()).getBytes("ASCII");
         } catch (UnsupportedEncodingException e) {
-            throw new WebSocketException("HttpHeader contains no ASCII characters");
+            throw new WebSocketException(
+                    "HttpHeader contains no ASCII characters");
         }
 
         byte[] content = withcontent ? handshakedata.getContent() : null;
@@ -807,7 +802,8 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         return buf;
     }
 
-    public List<Frame> createFrames(byte[] binary, boolean mask) throws WebSocketException {
+    public List<Frame> createFrames(byte[] binary, boolean mask)
+            throws WebSocketException {
         Frame curframe = new Frame();
         curframe.setPayload(binary);
         curframe.setFinished(true);
@@ -816,7 +812,8 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         return Collections.singletonList(curframe);
     }
 
-    public List<Frame> createFrames(String text, boolean mask) throws WebSocketException {
+    public List<Frame> createFrames(String text, boolean mask)
+            throws WebSocketException {
         Frame curframe = new Frame();
         curframe.setPayload(text);
         curframe.setFinished(true);
@@ -864,9 +861,9 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         return request;
     }
 
-    public HttpHeader createServerResponseHeader(HttpHeader request) throws WebSocketException {
-        
-        
+    public HttpHeader createServerResponseHeader(HttpHeader request)
+            throws WebSocketException {
+
         HttpHeader response = HttpHeader.createServerRequest();
 
         response.putHeader("Upgrade", "websocket");
@@ -905,7 +902,8 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
             return Opcode.PONG;
             // 11-15 are not yet defined
         default:
-            throw new WebSocketException(CloseFrame.PROTOCOL_ERROR, "unknown opcode " + (short) opcode);
+            throw new WebSocketException(CloseFrame.PROTOCOL_ERROR,
+                    "unknown opcode " + (short) opcode);
         }
     }
 
@@ -996,7 +994,8 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
         boolean FIN = b1 >> 8 != 0;
         byte rsv = (byte) ((b1 & ~(byte) 128) >> 4);
         if (rsv != 0)
-            throw new WebSocketException(CloseFrame.PROTOCOL_ERROR, "bad rsv " + rsv);
+            throw new WebSocketException(CloseFrame.PROTOCOL_ERROR, "bad rsv "
+                    + rsv);
         byte b2 = buffer.get( /* 1 */);
         boolean MASK = (b2 & -128) != 0;
         int payloadlength = (byte) (b2 & ~(byte) 128);
@@ -1034,10 +1033,11 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
                 }
                 long length = new BigInteger(bytes).longValue();
                 if (length > Integer.MAX_VALUE) {
-                    throw new WebSocketException(CloseFrame.TOOBIG, "Payloadsize is to big...");
-                } 
-                    payloadlength = (int) length;
-                
+                    throw new WebSocketException(CloseFrame.TOOBIG,
+                            "Payloadsize is to big...");
+                }
+                payloadlength = (int) length;
+
             }
         }
 
@@ -1109,15 +1109,12 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
 
     private String readHeaderLine(ByteBuffer buf) {
         ByteBuffer sbuf = readLine(buf);
-        
-        
-            
-            try {
-                return new String(sbuf.array(), 0, sbuf.limit(), "ASCII" );
-            } catch ( UnsupportedEncodingException e ) {
-                throw new RuntimeException( e );
-            }
-        
+
+        try {
+            return new String(sbuf.array(), 0, sbuf.limit(), "ASCII");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -1127,8 +1124,7 @@ public final class WebSocketInternalImpl implements WebSocketInternal {
 
         String line = readHeaderLine(buf);
         if (line == null)
-            throw new WebSocketException(
-                    "could not match http status line");
+            throw new WebSocketException("could not match http status line");
 
         String[] firstLineTokens = line.split(" ", 3);// eg. HTTP/1.1 101
                                                       // Switching the Protocols

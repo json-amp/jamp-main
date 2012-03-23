@@ -4,19 +4,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
 
-
-
-
 public interface JampFactory {
 
     JampMessageRouter createRouter();
 
     JampMessageSender lookupSender(String connectionString);
 
-    void registerSender(String connectionString, JampMessageSender mqMessageSender);
+    void registerSender(String connectionString,
+            JampMessageSender mqMessageSender);
 
-    MQMessageSender createMQMessageSender(String connectionString, String login,
-            String passcode, String destination) throws IOException;
+    MQMessageSender createMQMessageSender(String connectionString,
+            String login, String passcode, String destination)
+            throws IOException;
 
     MQMessageReciever createMQReciever(String connectionString, String login,
             String passcode, String destination, Class<?> serviceClass,
@@ -35,17 +34,19 @@ public interface JampFactory {
 
     MQMessageSender createMQMessageSender(String connectionString,
             String login, String passcode, String destination,
-            JampMessageDecoder messageDecoder)
-            throws IOException;
+            JampMessageDecoder messageDecoder) throws IOException;
 
     JampMessageDecoder createJampMessageDecoder();
 
     JampMessageEncoder createJampMessageEncoder();
 
     JSONDecoder<Object> createJSONObjectDecoder();
+
     JSONDecoder<List<Object>> createJSONListDecoder();
 
-    JampMessage createMessage(BufferedReader reader) throws Exception;
+    JampMessage createJampMessage();
 
+    JampMessage createJampMessageFromBufferedReader(BufferedReader reader)
+            throws Exception;
 
 }

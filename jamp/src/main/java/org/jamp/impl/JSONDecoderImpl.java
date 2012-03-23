@@ -22,7 +22,7 @@ public class JSONDecoderImpl<T> implements JSONDecoder<T> {
     int lastLineStart;
     char ch;
     final boolean debug = false; // just used to debug if their are
-                                         // problems
+                                 // problems
 
     JSONStringDecoder jsStringDecoder = new JSONStringDecoder();
 
@@ -40,17 +40,17 @@ public class JSONDecoderImpl<T> implements JSONDecoder<T> {
         if (safe()) {
             return ch = charArray[__index];
         }
-            return ch;
-        
+        return ch;
+
     }
 
     private final char nextChar() throws Exception {
         if (hasMore()) {
             __index++;
             return this.currentChar();
-        } 
-            return ch;
-        
+        }
+        return ch;
+
     }
 
     void reset() {
@@ -164,7 +164,8 @@ public class JSONDecoderImpl<T> implements JSONDecoder<T> {
                 Object value = decodeValue();
 
                 if (debug)
-                    System.out.printf(Messages.getString("JSONDecoderImpl.5"), key, value); //$NON-NLS-1$
+                    System.out
+                            .printf(Messages.getString("JSONDecoderImpl.5"), key, value); //$NON-NLS-1$
                 skipWhiteSpace();
 
                 map.put(key, value);
@@ -242,12 +243,14 @@ public class JSONDecoderImpl<T> implements JSONDecoder<T> {
                 builder.append(c);
                 this.nextChar();
                 continue;
-            } 
-                debug();
-                throw new IllegalStateException(Messages.getString("JSONDecoderImpl.12") //$NON-NLS-1$
-                        + line + Messages.getString("JSONDecoderImpl.13") + __index //$NON-NLS-1$
-                        + Messages.getString("JSONDecoderImpl.14") + c); //$NON-NLS-1$ 
-            
+            }
+            debug();
+            throw new IllegalStateException(
+                    Messages.getString("JSONDecoderImpl.12") //$NON-NLS-1$
+                            + line
+                            + Messages.getString("JSONDecoderImpl.13") + __index //$NON-NLS-1$
+                            + Messages.getString("JSONDecoderImpl.14") + c); //$NON-NLS-1$ 
+
         } while (this.hasMore());
 
         String svalue = builder.toString();
@@ -328,8 +331,8 @@ public class JSONDecoderImpl<T> implements JSONDecoder<T> {
         if (string instanceof String) {
             return (String) string;
         }
-            return string.toString();
-        
+        return string.toString();
+
     }
 
     private String decodeKeyName() throws Exception {

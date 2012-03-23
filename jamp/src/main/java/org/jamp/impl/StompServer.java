@@ -20,9 +20,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-/** This is only for testing JAMP, this is not a serious STOMP Server.
- * This implementation assumes all messages are content-type/plain-text.
- * Again it is only for quick integration testing, I defer to the Apollo, ActiveMQ, and HornetQ of the world for real STOMP.
+/**
+ * This is only for testing JAMP, this is not a serious STOMP Server. This
+ * implementation assumes all messages are content-type/plain-text. Again it is
+ * only for quick integration testing, I defer to the Apollo, ActiveMQ, and
+ * HornetQ of the world for real STOMP.
  */
 @SuppressWarnings("nls")
 public class StompServer {
@@ -41,8 +43,8 @@ public class StompServer {
     String userName = "rick";
     String password = "rick";
     BigDecimal version = new BigDecimal("1.1");
-    BigDecimal[] versionsSupported = new BigDecimal[] {
-            new BigDecimal("1.0"), version };
+    BigDecimal[] versionsSupported = new BigDecimal[] { new BigDecimal("1.0"),
+            version };
 
     Map<String, BlockingQueue<String>> queues = Collections
             .synchronizedMap(new HashMap<String, BlockingQueue<String>>());
@@ -101,7 +103,7 @@ public class StompServer {
         StompConnection connection;
         String destination;
 
-        public void handleMessage(String message)  {
+        public void handleMessage(String message) {
             connection.sendMessage(message, id);
         }
 
@@ -128,8 +130,9 @@ public class StompServer {
 
         }
 
-        public void sendMessage(String message, String id)  {
-            this.sendCommandWithBody("MESSAGE", message, String.format("subscription:%s",id));
+        public void sendMessage(String message, String id) {
+            this.sendCommandWithBody("MESSAGE", message,
+                    String.format("subscription:%s", id));
         }
 
         @Override
@@ -140,7 +143,7 @@ public class StompServer {
                 out = new PrintStream(socket.getOutputStream());
                 String line = null;
                 while ((line = reader.readLine()) != null) {
-                    
+
                     if ("".equals(line)) {
                         continue;
                     }
@@ -153,25 +156,30 @@ public class StompServer {
                         handleSend();
                     } else if ("SUBSCRIBE".equals(line) && connected) {
                         handleSubscribe();
-                    }else if ("UNSUBSCRIBE".equals(line) && connected) {
+                    } else if ("UNSUBSCRIBE".equals(line) && connected) {
                         handleUnsubscribe();
-                    }else if ("DISCONNECT".equals(line) && connected) {
+                    } else if ("DISCONNECT".equals(line) && connected) {
                         handleDisconnect();
                     } else {
-                        //ACK, NACK, BEGIN, COMMIT, ABORT, are not supported yet
-                        //They will be when the client supports them and I need something to test.
-                        //I don't plan on ever supporting BEGIN, COMMIT or ABORT.
+                        // ACK, NACK, BEGIN, COMMIT, ABORT, are not supported
+                        // yet
+                        // They will be when the client supports them and I need
+                        // something to test.
+                        // I don't plan on ever supporting BEGIN, COMMIT or
+                        // ABORT.
                         if (connected)
-                        error("NOT SUPPORTED YET (ACK, NACK, BEGIN, COMMIT, ABORT are not supported) unknown command: " + line);
+                            error("NOT SUPPORTED YET (ACK, NACK, BEGIN, COMMIT, ABORT are not supported) unknown command: "
+                                    + line);
                     }
                 }
 
             } catch (SocketException se) {
                 if (se.getMessage().contains("Connection reset")) {
-                    return; //this is ok... it just means that the client disconnected.
-                } 
-                    se.printStackTrace();
-                
+                    return; // this is ok... it just means that the client
+                            // disconnected.
+                }
+                se.printStackTrace();
+
             } catch (IOException ioe) {
                 // don't care
                 ioe.printStackTrace();
@@ -188,18 +196,21 @@ public class StompServer {
 
         private void handleDisconnect() throws IOException {
             this.connected = false;
-            
+
             Properties headers = this.readHeaders();
             String receiptId = headers.getProperty("receipt");
-            
-            if (receiptId!=null) {
-                sendCommand("RECEIPT", String.format("receipt-id:%s",receiptId));
-                if (debug)System.out.printf("receipt found = %s\n", receiptId);
+
+            if (receiptId != null) {
+                sendCommand("RECEIPT",
+                        String.format("receipt-id:%s", receiptId));
+                if (debug)
+                    System.out.printf("receipt found = %s\n", receiptId);
 
             } else {
-                if (debug)System.out.println("receipt not found");
+                if (debug)
+                    System.out.println("receipt not found");
             }
-            
+
             this.out.flush();
 
         }
@@ -223,30 +234,31 @@ public class StompServer {
             final String destination = headers.getProperty("destination");
             final String id = headers.getProperty("id");
             final String ack = headers.getProperty("ack");
-            
-            if (id==null) {
+
+            if (id == null) {
                 error("id is a required header");
             }
-            
-            if (destination==null) {
+
+            if (destination == null) {
                 error("destination is a required field");
             }
-            
-            if (ack!=null && !ack.equals("auto")) {
+
+            if (ack != null && !ack.equals("auto")) {
                 error("currently this test server only supports auto ack, other modes will be needed for testing, but for now, just auto");
             }
-            
-            
+
             MessageListener messageListener = new MessageListener();
             messageListener.connection = this;
             messageListener.destination = destination;
             messageListener.id = id;
             listeners.add(messageListener);
             listenerIdMap.put(id, messageListener);
-            
-            /* This might be first subscriber so go ahead and send him some messages. */
-            sendAll(destination);
 
+            /*
+             * This might be first subscriber so go ahead and send him some
+             * messages.
+             */
+            sendAll(destination);
 
             if (verifyStop()) {
             } else {
@@ -264,14 +276,14 @@ public class StompServer {
 
                 if (ch == '\n') {
                     return true;
-                } 
-                    error("protocol error, newline missing");
-                    return false;
-               
-            } 
-                error("protocol error, null missing to terminate message");
+                }
+                error("protocol error, newline missing");
                 return false;
-            
+
+            }
+            error("protocol error, null missing to terminate message");
+            return false;
+
         }
 
         private void handleSend() throws IOException {
@@ -284,15 +296,14 @@ public class StompServer {
                 error("You must specify a destination, see STOMP specification");
                 return;
             }
-            
-            if (slength!=null) {
+
+            if (slength != null) {
                 length = Integer.parseInt(slength);
             }
 
-
             final StringBuilder body = readBody(length);
 
-            if (body!=null) {
+            if (body != null) {
                 BlockingQueue<String> queue = getQueue(destination);
                 queue.offer(body.toString());
             }
@@ -309,31 +320,34 @@ public class StompServer {
         }
 
         private StringBuilder readBody(int length) throws IOException {
-            
-            if (length==0) {
+
+            if (length == 0) {
                 final StringBuilder body = new StringBuilder();
-    
+
                 for (char ch = (char) reader.read(); ch != 0; ch = (char) reader
                         .read()) {
                     body.append(ch);
                 }
                 return body;
-            }                 
+            }
             final StringBuilder body = new StringBuilder();
-                char[] buffer = new char[length];
-                int actual = reader.read(buffer, 0, length);
-                body.append(buffer);
-                if (actual != length) {
-                    error(String.format("unable to read content-length:%d from stream", length));
-                    return null;
-                }
-                int ch = reader.read();
-                if (ch!=0) {
-                    error(String.format("protocol unable to read content-length:%d from stream", length));
-                    return null;
-                }
-                return body;
-           
+            char[] buffer = new char[length];
+            int actual = reader.read(buffer, 0, length);
+            body.append(buffer);
+            if (actual != length) {
+                error(String.format(
+                        "unable to read content-length:%d from stream", length));
+                return null;
+            }
+            int ch = reader.read();
+            if (ch != 0) {
+                error(String
+                        .format("protocol unable to read content-length:%d from stream",
+                                length));
+                return null;
+            }
+            return body;
+
         }
 
         private void handleConnect() throws IOException {
@@ -358,11 +372,9 @@ public class StompServer {
                 if (!password.equals(props.getProperty("passcode"))) {
                     error("Authentication failed");
                     return;
-                } 
-                    if (debug)
-                        System.out.printf("passcode matches%s\n", password);
-
-                
+                }
+                if (debug)
+                    System.out.printf("passcode matches%s\n", password);
 
             } else {
                 error("Unkown login");
@@ -370,7 +382,8 @@ public class StompServer {
             }
 
             if (verifyStop()) {
-                sendCommand("CONNECTED", String.format("version:%s", version), "server:StompTester/0.01 *not for production use, just for testing");
+                sendCommand("CONNECTED", String.format("version:%s", version),
+                        "server:StompTester/0.01 *not for production use, just for testing");
                 this.connected = true;
             } else {
                 if (debug)
@@ -423,9 +436,9 @@ public class StompServer {
                 if ("".equals(line)) {
                     break;
                 }
-                    String[] split = line.split(":");
-                    props.put(split[0], split[1]);
-                
+                String[] split = line.split(":");
+                props.put(split[0], split[1]);
+
             }
 
             if (debug)
@@ -435,7 +448,7 @@ public class StompServer {
 
         }
 
-        void sendCommand(String command, String... headers)  {
+        void sendCommand(String command, String... headers) {
             this.sendCommandWithBody(command, null, headers);
 
         }

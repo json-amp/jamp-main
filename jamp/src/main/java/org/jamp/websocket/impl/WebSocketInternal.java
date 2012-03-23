@@ -21,7 +21,7 @@ public interface WebSocketInternal {
      * Send Text data to the other end.
      * 
      */
-    public abstract void send(String text) ;
+    public abstract void send(String text);
 
     /**
      * Send Binary data (plain bytes) to the other end.
@@ -29,7 +29,7 @@ public interface WebSocketInternal {
      * @throws IllegalArgumentException
      * @throws InterruptedException
      * @throws NotYetConnectedException
-     * @throws WebSocketException 
+     * @throws WebSocketException
      */
     public abstract void send(byte[] bytes);
 
@@ -61,8 +61,7 @@ public interface WebSocketInternal {
     public abstract void startClient();
 
     public void clientClose();
-    
-    public void flush() throws IOException;
 
+    public void flush() throws IOException;
 
 }

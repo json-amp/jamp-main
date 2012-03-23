@@ -65,7 +65,8 @@ public class ServiceInvokerTest {
         args.add(2);
         args.add("hello dolly");
         
-        JampMessage message = new JampMessage("send");
+        JampMessage message = org.jamp.Factory.factory().createJampMessage();
+        message.setMessageTypeFromString("send");
         
         message.setAction("addEmployee");
         message.setArgs(args);

@@ -10,23 +10,24 @@ import org.jamp.websocket.WebSocketContext;
 /**
  * 
  * @author Rick Hightower
- *
+ * 
  */
 public class WebSocketContextImpl implements WebSocketContext {
-    
-    WebSocketInternal connection;
-    
 
-    WebSocketContextImpl (WebSocketInternal ws) {
+    WebSocketInternal connection;
+
+    WebSocketContextImpl(WebSocketInternal ws) {
         this.connection = ws;
     }
+
     @Override
     public BufferedOutputStream startBinaryMessage() throws IOException {
         return new BufferedOutputStream(null) {
             @Override
-            public void   close() {
+            public void close() {
                 // No op
             }
+
             @Override
             public void write(byte[] b) throws IOException {
                 try {
@@ -35,34 +36,37 @@ public class WebSocketContextImpl implements WebSocketContext {
                     throw new IOException(ex);
                 }
             }
+
             @Override
-            public synchronized void write(byte[] b, int off, int len) throws IOException  {
-               for (int index = off; index < len; index++) {
-                   write(b[index]);
-               }
+            public synchronized void write(byte[] b, int off, int len)
+                    throws IOException {
+                for (int index = off; index < len; index++) {
+                    write(b[index]);
+                }
             }
+
             @Override
-            public synchronized void write(int b)  throws IOException {
-                this.write(new byte[]{(byte)b});
+            public synchronized void write(int b) throws IOException {
+                this.write(new byte[] { (byte) b });
             }
         };
     }
 
     @Override
     public PrintWriter startTextMessage() throws IOException {
-        return new PrintWriter(new Writer(){
+        return new PrintWriter(new Writer() {
 
             @Override
             public void close() throws IOException {
-                //No op  
+                // No op
             }
 
             @Override
             public void flush() throws IOException {
                 connection.flush();
-                
+
             }
-            
+
             @Override
             public void write(String text) throws IOException {
                 try {
@@ -71,19 +75,18 @@ public class WebSocketContextImpl implements WebSocketContext {
                     throw new IOException(ex);
                 }
             }
-            
+
             @Override
-            public void write(char[] cbuf, int off, int len)
-                    throws IOException {
-                
+            public void write(char[] cbuf, int off, int len) throws IOException {
+
                 StringBuilder builder = new StringBuilder(cbuf.length);
                 for (int index = off; index < len; index++) {
                     builder.append(cbuf[index]);
-                    
+
                 }
                 write(builder.toString());
             }
-            
+
         });
     }
 
@@ -93,7 +96,7 @@ public class WebSocketContextImpl implements WebSocketContext {
             connection.send(text);
         } catch (Exception ex) {
             throw new IOException(ex);
-        }        
+        }
     }
 
     @Override
@@ -105,11 +108,9 @@ public class WebSocketContextImpl implements WebSocketContext {
         }
     }
 
-
     @Override
     public void close() {
         connection.clientClose();
     }
-
 
 }

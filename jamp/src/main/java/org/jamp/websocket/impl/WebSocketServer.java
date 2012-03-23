@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-
 /**
  * <tt>WebSocketServer</tt> is an abstract class that only takes care of the
  * HTTP handshake portion of WebSockets. It's up to a subclass to add
@@ -22,7 +21,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author Nathan Rajlich (original author)
  * @author rick
  */
-public abstract class WebSocketServer  {
+public abstract class WebSocketServer {
 
     // INSTANCE PROPERTIES /////////////////////////////////////////////////////
     /**
@@ -47,8 +46,8 @@ public abstract class WebSocketServer  {
     private Thread thread;
 
     /**
-     * Creates a WebSocketServer that will attempt to
-     * listen on port <var>80</var>.
+     * Creates a WebSocketServer that will attempt to listen on port
+     * <var>80</var>.
      */
     public WebSocketServer() throws UnknownHostException {
         this(new InetSocketAddress(InetAddress.getLocalHost(), 80));
@@ -81,10 +80,10 @@ public abstract class WebSocketServer  {
         if (thread != null)
             throw new IllegalStateException("Already started");
         new Thread(new Runnable() {
-            
+
             @Override
             public void run() {
-                WebSocketServer.this.run(); 
+                WebSocketServer.this.run();
             }
         }).start();
     }
@@ -137,38 +136,39 @@ public abstract class WebSocketServer  {
     public int getPort() {
         return getAddress().getPort();
     }
-    
-    
+
     class ClientServicer {
         SocketChannel socketChannel;
         Selector clientSelector;
-        
-        ClientServicer (SocketChannel socketChannel) throws IOException {
+
+        ClientServicer(SocketChannel socketChannel) throws IOException {
             this.socketChannel = socketChannel;
             clientSelector = Selector.open();
             WebSocketInternal connection = createConnection(socketChannel);
-            socketChannel.register(clientSelector, SelectionKey.OP_READ, connection);
+            socketChannel.register(clientSelector, SelectionKey.OP_READ,
+                    connection);
 
         }
-        
+
         Thread t;
+
         void start() {
-            
-             t = new Thread(new Runnable() {
-                
+
+            t = new Thread(new Runnable() {
+
                 @Override
                 public void run() {
                     runIt();
                 }
             });
-            
-            
+
         }
-        
+
         void runIt() {
             while (!thread.isInterrupted()) {
                 WebSocketInternalImpl conn = null;
-                SelectionKey key = null;;
+                SelectionKey key = null;
+                ;
 
                 try {
                     clientSelector.select();
@@ -177,7 +177,6 @@ public abstract class WebSocketServer  {
 
                     while (i.hasNext()) {
                         key = i.next();
-
 
                         i.remove();
 
@@ -189,8 +188,8 @@ public abstract class WebSocketServer  {
                         if (key.isValid() && key.isWritable()) {
                             conn = (WebSocketInternalImpl) key.attachment();
                             conn.flush();
-                            key.channel().register(clientSelector, SelectionKey.OP_READ,
-                                    conn);
+                            key.channel().register(clientSelector,
+                                    SelectionKey.OP_READ, conn);
                         }
                     }
                 } catch (IOException ex) {
@@ -204,8 +203,7 @@ public abstract class WebSocketServer  {
             }
 
         }
- 
-        
+
     }
 
     // Runnable IMPLEMENTATION /////////////////////////////////////////////////
@@ -222,7 +220,8 @@ public abstract class WebSocketServer  {
             serverSocketChannel.socket().bind(address);
             // InetAddress.getLocalHost()
             selector = Selector.open();
-            serverSocketChannel.register(selector, serverSocketChannel.validOps());
+            serverSocketChannel.register(selector,
+                    serverSocketChannel.validOps());
         } catch (IOException ex) {
             onError(null, ex);
             return;
@@ -230,7 +229,8 @@ public abstract class WebSocketServer  {
 
         while (!thread.isInterrupted()) {
             WebSocketInternalImpl conn = null;
-            SelectionKey key = null;;
+            SelectionKey key = null;
+            ;
 
             try {
                 selector.select();
@@ -240,19 +240,21 @@ public abstract class WebSocketServer  {
                 while (i.hasNext()) {
                     key = i.next();
 
-
                     // Remove the current key
                     i.remove();
 
                     // if isAcceptable == true
                     // then a client required a connection
                     if (key.isAcceptable()) {
-                        SocketChannel socketChannel = serverSocketChannel.accept();
+                        SocketChannel socketChannel = serverSocketChannel
+                                .accept();
                         socketChannel.configureBlocking(false);
-//                        ClientServicer cs = new ClientServicer(socketChannel);
-//                        cs.start();
+                        // ClientServicer cs = new
+                        // ClientServicer(socketChannel);
+                        // cs.start();
                         WebSocketInternal connection = createConnection(socketChannel);
-                        socketChannel.register(selector, SelectionKey.OP_READ, connection);
+                        socketChannel.register(selector, SelectionKey.OP_READ,
+                                connection);
                     }
 
                     // if isReadable == true
@@ -296,11 +298,10 @@ public abstract class WebSocketServer  {
         }
     }
 
-    private WebSocketInternal createConnection(
-            SocketChannel clientSocketChannel) {
+    private WebSocketInternal createConnection(SocketChannel clientSocketChannel) {
         WebSocketInternal connection = WebSocketInternalImpl
                 .createServerWebSocket(new LowLevelListenerAdapter() {
-                    
+
                     @Override
                     public final void onMessageText(WebSocketInternal conn,
                             String message) {
@@ -308,7 +309,8 @@ public abstract class WebSocketServer  {
                     }
 
                     @Override
-                    public final void onMessageBinary(WebSocketInternal conn, byte[] blob) {
+                    public final void onMessageBinary(WebSocketInternal conn,
+                            byte[] blob) {
                         onMessage(conn, blob);
                     }
 
@@ -321,8 +323,8 @@ public abstract class WebSocketServer  {
                     }
 
                     @Override
-                    public final void onWebsocketClose(WebSocketInternal conn, int code,
-                            String reason, boolean remote) {
+                    public final void onWebsocketClose(WebSocketInternal conn,
+                            int code, String reason, boolean remote) {
                         if (connections.remove(conn)) {
                             onClose(conn, code, reason, remote);
                         }
@@ -330,11 +332,12 @@ public abstract class WebSocketServer  {
 
                     /**
                      * @param conn
-                     *            may be null if the error does not belong to a single
-                     *            connection
+                     *            may be null if the error does not belong to a
+                     *            single connection
                      */
                     @Override
-                    public final void errorHandler(WebSocketInternal conn, Exception ex) {
+                    public final void errorHandler(WebSocketInternal conn,
+                            Exception ex) {
                         onError(conn, ex);
                     }
 
@@ -342,27 +345,31 @@ public abstract class WebSocketServer  {
                     public final void onWriteDemand(WebSocketInternal conn) {
                         selector.wakeup();
                     }
-                
+
                 }, clientSocketChannel);
         return connection;
     }
 
-
-
-    public void onOpen(@SuppressWarnings("unused") WebSocketInternal conn, @SuppressWarnings("unused") HttpHeader handshake) {
+    public void onOpen(@SuppressWarnings("unused") WebSocketInternal conn,
+            @SuppressWarnings("unused") HttpHeader handshake) {
     }
 
-    public void onClose(@SuppressWarnings("unused") WebSocketInternal conn, @SuppressWarnings("unused") int code, @SuppressWarnings("unused") String reason,
+    public void onClose(@SuppressWarnings("unused") WebSocketInternal conn,
+            @SuppressWarnings("unused") int code,
+            @SuppressWarnings("unused") String reason,
             @SuppressWarnings("unused") boolean remote) {
     }
 
-    public void onMessage(@SuppressWarnings("unused") WebSocketInternal conn, @SuppressWarnings("unused") String message) {
+    public void onMessage(@SuppressWarnings("unused") WebSocketInternal conn,
+            @SuppressWarnings("unused") String message) {
     }
 
-    public void onError(@SuppressWarnings("unused") WebSocketInternal conn, @SuppressWarnings("unused") Exception ex) {
+    public void onError(@SuppressWarnings("unused") WebSocketInternal conn,
+            @SuppressWarnings("unused") Exception ex) {
     }
 
-    public void onMessage(@SuppressWarnings("unused") WebSocketInternal conn, @SuppressWarnings("unused") byte[] message) {
+    public void onMessage(@SuppressWarnings("unused") WebSocketInternal conn,
+            @SuppressWarnings("unused") byte[] message) {
     };
 
 }

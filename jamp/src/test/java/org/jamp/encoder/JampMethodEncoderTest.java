@@ -29,7 +29,8 @@ public class JampMethodEncoderTest {
         List <Object> args = new ArrayList<Object>();
 
         
-        JampMessage message = new JampMessage("send");
+        JampMessage message = org.jamp.Factory.factory().createJampMessage();
+        message.setMessageTypeFromString("send");
         message.setAction("addEmployee");
         message.setArgs(args);
         

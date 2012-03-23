@@ -1,6 +1,5 @@
 package org.jamp;
 
-
 public interface JampMessageEncoder extends Encoder<String, JampMessage> {
 
     @Override

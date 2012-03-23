@@ -26,5 +26,4 @@ public class SimpleWebSocketListenerAdapter implements SimpleWebSocketListener {
     public void onDisconnect(WebSocketContext context) throws IOException {
     }
 
-
 }

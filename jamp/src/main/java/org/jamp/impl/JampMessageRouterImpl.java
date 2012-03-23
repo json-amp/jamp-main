@@ -14,7 +14,8 @@ public class JampMessageRouterImpl implements JampMessageRouter {
     Map<String, JampMessageRouter> routers = new HashMap<String, JampMessageRouter>();
 
     {
-        MQMessageRouter router = new MQMessageRouter();
+        MQMessageRouter router = new MQMessageRouter(); // should not be new
+                                                        // TODO put into factory
         routers.put("stomp", router);
         routers.put("amqp", router);
     }
@@ -34,6 +35,10 @@ public class JampMessageRouterImpl implements JampMessageRouter {
     @Override
     public JampMessage routeMessage(JampMessage message) throws Exception {
 
+        if (message.getToURL() == null) {
+            // What do you do here?
+            return null;
+        }
         String scheme = message.getToURL().getScheme();
 
         if (scheme.equals("http") || scheme.equals("ws")) {

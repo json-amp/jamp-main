@@ -14,7 +14,7 @@ import org.jamp.websocket.WebSocketListener;
 /**
  * 
  * @author Rick Hightower
- *
+ * 
  */
 public class WebSocketConnectionImpl implements WebSocketConnection {
 
@@ -38,7 +38,8 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
     }
 
     @Override
-    public void connect(URI auri, WebSocketListener wslistener) throws IOException {
+    public void connect(URI auri, WebSocketListener wslistener)
+            throws IOException {
         this.doConnect(auri, wslistener);
     }
 
@@ -58,8 +59,9 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
     }
 
     @SuppressWarnings("nls")
-    private void doConnect(URI auri, BaseWebSocketListener base) throws IOException {
-        
+    private void doConnect(URI auri, BaseWebSocketListener base)
+            throws IOException {
+
         if (base == null) {
             throw new IllegalArgumentException("listener can't be null");
         }
@@ -68,58 +70,57 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
         connection = WebSocketInternalImpl.createClientWebSocket(
                 new LowLevelListenerAdapter() {
                     @Override
-                    public void onMessageBinary(
-                            WebSocketInternal conn, byte[] blob) {
+                    public void onMessageBinary(WebSocketInternal conn,
+                            byte[] blob) {
                         onMessage(blob);
 
                     }
 
                     @Override
-                    public void onMessageText(
-                            WebSocketInternal conn, String text) {
+                    public void onMessageText(WebSocketInternal conn,
+                            String text) {
                         onMessage(text);
                     }
+
                     @Override
                     public void onStart(WebSocketInternalImpl conn,
                             HttpHeader handshake) {
-                       try {
+                        try {
                             listener.onStart(context);
                         } catch (IOException e) {
-                            e.printStackTrace(); //Log this better TODO
+                            e.printStackTrace(); // Log this better TODO
                         }
                     }
-                    @Override
-                    public void onWebsocketClose(WebSocketInternal conn, int code,
-                            String reason, boolean remote) {
-                         
-                         try {
-                             if (code == CloseFrame.NORMAL) {
-                                 
-                                 listener.onClose(context);
-                                 listener.onDisconnect(context);
 
-                             } else {
-                                 listener.onDisconnect(context);
-                             }
-                        } catch (IOException e) {
-                            e.printStackTrace(); //Log this better TODO
-                        }
-                     }
-                    
-                    
                     @Override
-                    public void errorHandler(WebSocketInternal conn, Exception ex) {
+                    public void onWebsocketClose(WebSocketInternal conn,
+                            int code, String reason, boolean remote) {
+
+                        try {
+                            if (code == CloseFrame.NORMAL) {
+
+                                listener.onClose(context);
+                                listener.onDisconnect(context);
+
+                            } else {
+                                listener.onDisconnect(context);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace(); // Log this better TODO
+                        }
+                    }
+
+                    @Override
+                    public void errorHandler(WebSocketInternal conn,
+                            Exception ex) {
                         ex.printStackTrace();
                     }
 
-
-
                 }, uri, uri.getPort());
-        
+
         this.context = new WebSocketContextImpl(this.connection);
 
         connection.startClient();
-        
 
     }
 
@@ -129,14 +130,14 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
 
             if (listener instanceof WebSocketListener) {
                 WebSocketListener wsListener = (WebSocketListener) listener;
-                    wsListener.onReadText(null, new StringReader(text));
+                wsListener.onReadText(null, new StringReader(text));
             } else if (listener instanceof SimpleWebSocketListener) {
                 SimpleWebSocketListener simpleListener = (SimpleWebSocketListener) listener;
-                    simpleListener.onTextMessage(null, text);
+                simpleListener.onTextMessage(null, text);
             }
         } catch (IOException ex) {
             ex.printStackTrace();
-            //clean up
+            // clean up
         }
 
     }
@@ -146,14 +147,14 @@ public class WebSocketConnectionImpl implements WebSocketConnection {
 
             if (listener instanceof WebSocketListener) {
                 WebSocketListener wsListener = (WebSocketListener) listener;
-                    wsListener.onReadBinary(null, new ByteArrayInputStream(buffer));
+                wsListener.onReadBinary(null, new ByteArrayInputStream(buffer));
             } else if (listener instanceof SimpleWebSocketListener) {
                 SimpleWebSocketListener simpleListener = (SimpleWebSocketListener) listener;
-                    simpleListener.onBinaryMessage(null, buffer);
+                simpleListener.onBinaryMessage(null, buffer);
             }
         } catch (IOException ex) {
             ex.printStackTrace();
-            //clean up
+            // clean up
         }
 
     }
